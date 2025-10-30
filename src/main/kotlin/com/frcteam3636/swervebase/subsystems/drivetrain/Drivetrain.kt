@@ -3,6 +3,7 @@ package com.frcteam3636.swervebase.subsystems.drivetrain
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.SignalLogger
 import com.frcteam3636.swervebase.CTREDeviceId
+import com.frcteam3636.swervebase.REVMotorControllerId
 import com.frcteam3636.swervebase.Robot
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain.Constants.BRAKE_POSITION
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain.Constants.FREE_SPEED
@@ -53,16 +54,7 @@ import kotlin.math.withSign
 object Drivetrain : Subsystem {
     private val io = when (Robot.model) {
         Robot.Model.SIMULATION -> DrivetrainIOSim()
-        Robot.Model.COMPETITION -> DrivetrainIOReal(
-            MODULE_POSITIONS.zip(Drivetrain.Constants.KRAKEN_MODULE_CAN_IDS)
-                .map { (corner, ids) ->
-                    val (driveId, turnId, encoderId) = ids
-                    Mk5nSwerveModule(
-                        DrivingTalon(driveId),
-                        TurningTalon(turnId, encoderId, corner.magnetOffset),
-                        corner.position.rotation
-                    )
-                })
+        Robot.Model.COMPETITION -> DrivetrainIOReal.fromKrakenSwerve()
     }
     val inputs = LoggedDrivetrainInputs()
 
@@ -357,28 +349,24 @@ object Drivetrain : Subsystem {
         val KRAKEN_MODULE_CAN_IDS =
             PerCorner(
                 frontLeft =
-                    Triple(
+                    Pair(
                         CTREDeviceId.FrontLeftDrivingMotor,
-                        CTREDeviceId.FrontLeftTurningMotor,
-                        CTREDeviceId.FrontLeftTurningEncoder
+                        REVMotorControllerId.FrontLeftTurningMotor,
                     ),
                 frontRight =
-                    Triple(
+                    Pair(
                         CTREDeviceId.FrontRightDrivingMotor,
-                        CTREDeviceId.FrontRightTurningMotor,
-                        CTREDeviceId.FrontRightTurningEncoder
+                        REVMotorControllerId.FrontRightTurningMotor,
                     ),
                 backLeft =
-                    Triple(
+                    Pair(
                         CTREDeviceId.BackLeftDrivingMotor,
-                        CTREDeviceId.BackLeftTurningMotor,
-                        CTREDeviceId.BackLeftTurningEncoder
+                        REVMotorControllerId.BackLeftTurningMotor,
                     ),
                 backRight =
-                    Triple(
+                    Pair(
                         CTREDeviceId.BackRightDrivingMotor,
-                        CTREDeviceId.BackRightTurningMotor,
-                        CTREDeviceId.BackRightTurningEncoder
+                        REVMotorControllerId.BackRightTurningMotor,
                     ),
             )
 

@@ -85,6 +85,20 @@ class DrivetrainIOReal(override val modules: PerCorner<SwerveModule>) : Drivetra
         Robot.Model.SIMULATION -> GyroSim(modules)
         Robot.Model.COMPETITION -> GyroPigeon(Pigeon2(CTREDeviceId.PigeonGyro))
     }
+
+    companion object {
+        fun fromKrakenSwerve() =
+            DrivetrainIOReal(
+                MODULE_POSITIONS.zip(Drivetrain.Constants.KRAKEN_MODULE_CAN_IDS)
+                    .map { (corner, ids) ->
+                        val (driveId, turnId) = ids
+                        MAXSwerveModule(
+                            DrivingTalon(driveId),
+                            turnId,
+                            corner.position.rotation
+                        )
+                    })
+    }
 }
 
 /** Drivetrain I/O layer that uses simulated swerve modules along with a simulated gyro with an angle based off their movement. */

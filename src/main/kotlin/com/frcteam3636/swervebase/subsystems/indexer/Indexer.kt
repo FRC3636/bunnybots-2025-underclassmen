@@ -8,15 +8,18 @@ import com.frcteam3636.swervebase.subsystems.drivetrain.DrivetrainIOSim
 import com.frcteam3636.swervebase.subsystems.drivetrain.DrivingTalon
 import com.frcteam3636.swervebase.subsystems.drivetrain.Mk5nSwerveModule
 import com.frcteam3636.swervebase.subsystems.drivetrain.TurningTalon
+import com.frcteam3636.swervebase.utils.math.volts
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.Subsystem
 import org.littletonrobotics.junction.Logger
 
 class Indexer : Subsystem {
-    private val io = DrivetrainIOReal()
+    private val io = IndexerIOReal()
 
     var inputs = LoggedIndexerInputs()
+
+    var isIntakeRunning = false;
 
     override fun periodic() {
         io.updateInputs(inputs)
@@ -24,6 +27,10 @@ class Indexer : Subsystem {
     }
 
     fun intake() : Command = Commands.sequence(
-        // TODO()
-    )
+        runOnce { io.setVoltage(2.0.volts) },
+        Commands.waitUntil { inputs.isCarrotDetected },
+        runOnce { io.setVoltage(1.0.volts) },
+        Commands.waitUntil { !inputs.isCarrotDetected },
+        runOnce { io.setSpeed(-0.02) }
+    ).onlyWhile { isIntakeRunning }.withInterruptBehavior(Command.InterruptionBehavior.kCancelSelf)
 }
