@@ -13,17 +13,20 @@ enum class CTREDeviceId(val num: Int, val bus: CANBus) {
     BackRightDrivingMotor(3, canivoreBus),
     FrontRightDrivingMotor(4, canivoreBus),
 
-    FrontLeftTurningMotor(5, canivoreBus),
-    BackLeftTurningMotor(6, canivoreBus),
-    BackRightTurningMotor(7, canivoreBus),
-    FrontRightTurningMotor(8, canivoreBus),
-
-    FrontLeftTurningEncoder(9, canivoreBus),
-    BackLeftTurningEncoder(10, canivoreBus),
-    BackRightTurningEncoder(11, canivoreBus),
-    FrontRightTurningEncoder(12, canivoreBus),
 
     PigeonGyro(20, canivoreBus),
+}
+
+enum class REVMotorControllerId(val num: Int) {
+    FrontLeftTurningMotor(5),
+    BackLeftTurningMotor(6),
+    BackRightTurningMotor(7),
+    FrontRightTurningMotor(8),
+
+    IntakeMotor(10),
+    IndexerMotor(11),
+    ShooterMotor(12),
+
 }
 
 fun CANcoder(id: CTREDeviceId) = CANcoder(id.num, id.bus)
