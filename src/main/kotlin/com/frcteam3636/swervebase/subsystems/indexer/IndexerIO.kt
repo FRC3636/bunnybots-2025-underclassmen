@@ -14,7 +14,6 @@ open class IndexerInputs {
 
 interface IndexerIO {
     fun setSpeed(percent: Double)
-    fun setCurrent(current: Current)
     fun setVoltage(voltage: Voltage)
     fun updateInputs(inputs: IndexerInputs)
 }
@@ -24,15 +23,11 @@ class IndexerIOReal : IndexerIO {
     private var indexerMotor = SparkMax(REVMotorControllerId.IndexerMotor.num, SparkLowLevel.MotorType.kBrushless);
 
     override fun setSpeed(percent: Double) {
-        TODO("Not yet implemented")
-    }
-
-    override fun setCurrent(current: Current) {
-        TODO("Not yet implemented")
+        indexerMotor.set(percent)
     }
 
     override fun setVoltage(voltage: Voltage) {
-        TODO("Not yet implemented")
+        indexerMotor.setVoltage(voltage)
     }
 
     override fun updateInputs(inputs: IndexerInputs) {
