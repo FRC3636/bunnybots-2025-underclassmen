@@ -189,8 +189,8 @@ object Robot : LoggedRobot() {
     }
 
     override fun simulationPeriodic() {
-        SimulatedArena.getInstance().simulationPeriodic()
-
+        val instance = SimulatedArena.getInstance()
+        instance.simulationPeriodic()
     }
 
     private fun reportDiagnostics() {
