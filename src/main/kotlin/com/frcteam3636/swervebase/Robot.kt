@@ -205,15 +205,17 @@ object Robot : LoggedRobot() {
 
     override fun simulationInit() {
         val instance = SimulatedArena.getInstance()
-        instance.addGamePiece(BunnybotsCarrotOnField(Pose2d(0.0.meters, 0.0.meters, Rotation2d(0.0.degrees))))
     }
 
     override fun simulationPeriodic() {
         val instance = SimulatedArena.getInstance()
         instance.simulationPeriodic()
 
-        val carrotPositions: Array<Pose3d> = instance.getGamePiecesArrayByType("Carrot")
+        val carrotPositions = instance.getGamePiecesArrayByType("Carrot")
         Logger.recordOutput("FieldSimulation/CarrotPositions", *carrotPositions)
+
+        val cabbagePositions = instance.getGamePiecesArrayByType("Cabbage")
+        Logger.recordOutput("FieldSimulation/CabbagePositions", *cabbagePositions)
     }
 
     private fun reportDiagnostics() {

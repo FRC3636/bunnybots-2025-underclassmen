@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Pose3d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
+import org.dyn4j.geometry.Rotation
 import org.ironmaple.simulation.SimulatedArena
 
 // From the perspective of https://docs.advantagescope.org/assets/images/coordinate-system-blue-wall-cb4489de5e0472f383794a0a0ee5d3c5.png
@@ -32,6 +33,7 @@ class Arena2025Bunnybots : SimulatedArena(CarrotChaosObstacleMap()) {
     override fun placeGamePiecesOnField() {
         // TODO: Actual positions
         super.addGamePiece(BunnybotsCarrotOnField(Pose2d(5.0, 5.0, Rotation2d(0.0.degrees))))
+        super.addGamePiece(BunnybotsCabbageOnField(Pose2d(5.7, TOP_LEFT_CORNER.y / 2.0, Rotation2d(0.0.degrees))))
     }
 
     override fun getGamePiecesByType(type: String?): List<Pose3d?>? {
