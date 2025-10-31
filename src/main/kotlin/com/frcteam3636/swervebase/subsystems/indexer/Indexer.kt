@@ -8,11 +8,10 @@ import edu.wpi.first.wpilibj2.command.Subsystem
 import org.littletonrobotics.junction.Logger
 
 class Indexer : Subsystem {
-    private val io = IndexerIOReal()
-//    private val io = when (Robot.model) {
-//        Robot.model.SIMULATION -> IndexerIOSim()
-//        Robot.model.COMPETITION -> IndexerIOReal()
-//    }
+    private val io = when (Robot.model) {
+        Robot.Model.SIMULATION -> IndexerIOSim()
+        Robot.Model.COMPETITION -> IndexerIOReal()
+    }
 
     var inputs = LoggedIndexerInputs()
 
@@ -22,13 +21,13 @@ class Indexer : Subsystem {
     }
 
     fun intake() : Command = Commands.startEnd(
-        { io.setVoltage(2.0.volts)},
-        {io.setVoltage(0.0.volts)}
+        { io.setVoltage(2.0.volts) },
+        { io.setVoltage(0.0.volts) }
     )
 
-    fun outTake() : Command = Commands.startEnd(
-        { io.setVoltage(-2.0.volts)},
-        {io.setVoltage(0.0.volts)}
+    fun outtake() : Command = Commands.startEnd(
+        { io.setVoltage((-2.0).volts) },
+        { io.setVoltage(0.0.volts) }
     )
 
 }

@@ -43,22 +43,22 @@ class IndexerIOReal : IndexerIO {
     }
 
     override fun updateInputs(inputs: IndexerInputs) {
-        //TODO("How is a carrot detected?")
         inputs.indexerMotorVelocity = indexerMotor.encoder.velocity.rpm
+        // Probably want to do code for detecting carrots here.
     }
 }
 
 class IndexerIOSim: IndexerIO {
 
     override fun setSpeed(percent: Double) {
-        //TODO("Not yet implemented")
+        TODO("Not yet implemented")
     }
 
     override fun setVoltage(voltage: Voltage) {
-        //TODO("Not yet implemented")
+        TODO("Not yet implemented")
     }
 
     override fun updateInputs(inputs: IndexerInputs) {
-        //TODO("Not yet implemented")
+        TODO("Not yet implemented")
     }
 }
