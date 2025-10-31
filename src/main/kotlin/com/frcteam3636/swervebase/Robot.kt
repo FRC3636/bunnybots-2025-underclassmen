@@ -5,6 +5,10 @@ import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.SignalLogger
 import com.frcteam3636.swervebase.Dashboard.field
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain
+import com.frcteam3636.swervebase.utils.math.degrees
+import com.frcteam3636.swervebase.utils.math.meters
+import com.frcteam3636.swervebase.utils.sim.Arena2025Bunnybots
+import com.frcteam3636.swervebase.utils.sim.BunnybotsCarrotOnField
 import com.frcteam3636.version.BUILD_DATE
 import com.frcteam3636.version.DIRTY
 import com.frcteam3636.version.GIT_BRANCH
@@ -13,6 +17,9 @@ import com.pathplanner.lib.util.PathPlannerLogging
 import edu.wpi.first.hal.FRCNetComm.tInstances
 import edu.wpi.first.hal.FRCNetComm.tResourceType
 import edu.wpi.first.hal.HAL
+import edu.wpi.first.math.geometry.Pose2d
+import edu.wpi.first.math.geometry.Pose3d
+import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.wpilibj.*
 import edu.wpi.first.wpilibj.util.WPILibVersion
 import edu.wpi.first.wpilibj2.command.Command
@@ -21,7 +28,9 @@ import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
+import org.dyn4j.geometry.Rotation
 import org.ironmaple.simulation.SimulatedArena
+import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnField
 import org.littletonrobotics.junction.LogFileUtil
 import org.littletonrobotics.junction.LoggedRobot
 import org.littletonrobotics.junction.Logger
@@ -59,7 +68,13 @@ object Robot : LoggedRobot() {
 
     private val statusSignals = mutableListOf<BaseStatusSignal>()
 
+    private val simulationInstance = Arena2025Bunnybots()
+
     var beforeFirstEnable = true
+
+    init {
+        SimulatedArena.overrideInstance(simulationInstance)
+    }
 
     override fun robotInit() {
         // Report the use of the Kotlin Language for "FRC Usage Report" statistics
@@ -188,9 +203,17 @@ object Robot : LoggedRobot() {
         }
     }
 
+    override fun simulationInit() {
+        val instance = SimulatedArena.getInstance()
+        instance.addGamePiece(BunnybotsCarrotOnField(Pose2d(0.0.meters, 0.0.meters, Rotation2d(0.0.degrees))))
+    }
+
     override fun simulationPeriodic() {
         val instance = SimulatedArena.getInstance()
         instance.simulationPeriodic()
+
+        val carrotPositions: Array<Pose3d> = instance.getGamePiecesArrayByType("Carrot")
+        Logger.recordOutput("FieldSimulation/CarrotPositions", *carrotPositions)
     }
 
     private fun reportDiagnostics() {
