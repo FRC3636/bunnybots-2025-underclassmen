@@ -7,7 +7,6 @@ import com.frcteam3636.swervebase.utils.math.rpm
 import com.revrobotics.spark.SparkBase.PersistMode
 import com.revrobotics.spark.SparkBase.ResetMode
 import com.revrobotics.spark.SparkLowLevel
-import com.revrobotics.spark.SparkBase.*
 import com.revrobotics.spark.config.SparkBaseConfig
 import com.revrobotics.spark.config.SparkMaxConfig
 import edu.wpi.first.units.measure.Voltage
@@ -17,7 +16,7 @@ import kotlin.apply
 @Logged
 open class IndexerInputs {
     var isCarrotDetected: Boolean = false
-    var IndexerMotorVelocity = 0.rotationsPerSecond
+    var indexerMotorVelocity = 0.rotationsPerSecond
 }
 
 interface IndexerIO {
@@ -45,7 +44,7 @@ class IndexerIOReal : IndexerIO {
 
     override fun updateInputs(inputs: IndexerInputs) {
         //TODO("How is a carrot detected?")
-        inputs.IndexerMotorVelocity = indexerMotor.encoder.velocity.rpm
+        inputs.indexerMotorVelocity = indexerMotor.encoder.velocity.rpm
     }
 }
 

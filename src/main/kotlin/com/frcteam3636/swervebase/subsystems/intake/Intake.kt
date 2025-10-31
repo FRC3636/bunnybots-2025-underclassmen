@@ -16,7 +16,6 @@ class Intake : Subsystem {
     }
 
     fun intake() : Command = Commands.sequence(
-
     )
 
 }
