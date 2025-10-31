@@ -3,13 +3,16 @@ package com.frcteam3636.swervebase.subsystems.indexer
 import com.frcteam3636.swervebase.REVMotorControllerId
 import com.frcteam3636.swervebase.SparkMax
 import com.frcteam3636.swervebase.utils.math.rotationsPerSecond
+import com.frcteam3636.swervebase.utils.math.rpm
 import com.revrobotics.spark.SparkBase.PersistMode
 import com.revrobotics.spark.SparkBase.ResetMode
 import com.revrobotics.spark.SparkLowLevel
 import com.revrobotics.spark.SparkBase.*
+import com.revrobotics.spark.config.SparkBaseConfig
 import com.revrobotics.spark.config.SparkMaxConfig
 import edu.wpi.first.units.measure.Voltage
 import org.team9432.annotation.Logged
+import kotlin.apply
 
 @Logged
 open class IndexerInputs {
@@ -26,8 +29,8 @@ interface IndexerIO {
 class IndexerIOReal : IndexerIO {
 
     private var indexerMotor = SparkMax(REVMotorControllerId.IndexerMotor, SparkLowLevel.MotorType.kBrushless).apply {
-        val innerConfig = SparkMaxConfig.apply {
-            idleMode(idleMode.kBrake)
+        val innerConfig = SparkMaxConfig().apply {
+            idleMode(SparkBaseConfig.IdleMode.kBrake)
         }
         configure(innerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
     }
@@ -42,7 +45,7 @@ class IndexerIOReal : IndexerIO {
 
     override fun updateInputs(inputs: IndexerInputs) {
         //TODO("How is a carrot detected?")
-        inputs.IndexerMotorVelocity = indexerMotor.velocity.value
+        inputs.IndexerMotorVelocity = indexerMotor.encoder.velocity.rpm
     }
 }
 
