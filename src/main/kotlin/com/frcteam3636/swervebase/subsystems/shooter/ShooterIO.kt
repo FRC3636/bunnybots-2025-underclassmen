@@ -43,10 +43,12 @@ class ShooterIOReal : ShooterIO {
 
     override fun setSpeed(percent: Double) {
         upperShooterMotor.set(percent)
+        lowerShooterMotor.set(percent)
     }
 
     override fun setVoltage(voltage: Voltage) {
         upperShooterMotor.setVoltage(voltage)
+        lowerShooterMotor.setVoltage(voltage)
     }
 
     override fun updateInputs(inputs: ShooterInputs) {

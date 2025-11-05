@@ -147,9 +147,9 @@ object Robot : LoggedRobot() {
 
     /** Start robot subsystems so that their periodic tasks are run */
     private fun configureSubsystems() {
-        Drivetrain.register()
-        Indexer.register()
-        Intake.register()
+//        Drivetrain.register()
+//        Indexer.register()
+//        Intake.register()
         Shooter.register()
     }
 
@@ -166,13 +166,14 @@ object Robot : LoggedRobot() {
 
     /** Configure which commands each joystick button triggers. */
     private fun configureBindings() {
-        Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft.hid, joystickRight.hid)
-        // (The button with the yellow tape on it)
-        joystickLeft.button(8).onTrue(Commands.runOnce({
-            println("Zeroing gyro.")
-            Drivetrain.zeroGyro()
-        }).ignoringDisable(true))
-
+//        Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft.hid, joystickRight.hid)
+//        // (The button with the yellow tape on it)
+//        joystickLeft.button(8).onTrue(Commands.runOnce({
+//            println("Zeroing gyro.")
+//            Drivetrain.zeroGyro()
+//        }).ignoringDisable(true))
+        controller.a().whileTrue(Shooter.outtake())
+        controller.b().whileTrue(Shooter.intake())
 
 //        controller.leftBumper().onTrue(Commands.runOnce(SignalLogger::start))
 //        controller.rightBumper().onTrue(Commands.runOnce(SignalLogger::stop))
