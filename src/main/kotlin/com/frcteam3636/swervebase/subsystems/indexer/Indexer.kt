@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.Subsystem
 import org.littletonrobotics.junction.Logger
 
-class Indexer : Subsystem {
+object Indexer: Subsystem {
     private val io = when (Robot.model) {
         Robot.Model.SIMULATION -> IndexerIOSim()
         Robot.Model.COMPETITION -> IndexerIOReal()
