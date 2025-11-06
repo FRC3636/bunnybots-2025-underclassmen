@@ -47,7 +47,7 @@ class ShooterIOReal : ShooterIO {
     }
 
     override fun setVoltage(voltage: Voltage) {
-        upperShooterMotor.setVoltage(voltage)
+        upperShooterMotor.setVoltage(-voltage)
         lowerShooterMotor.setVoltage(voltage)
     }
 
@@ -60,14 +60,16 @@ class ShooterIOReal : ShooterIO {
 class ShooterIOSim: ShooterIO {
 
     override fun setSpeed(percent: Double) {
-        TODO("Not yet implemented")
+        // TODO("Not yet implemented")
     }
 
     override fun setVoltage(voltage: Voltage) {
-        TODO("Not yet implemented")
+        // TODO("Not yet implemented")
     }
 
     override fun updateInputs(inputs: ShooterInputs) {
-        TODO("Not yet implemented")
+        // TODO("Not yet implemented")
     }
 }
+
+// You have zero days to fix this
