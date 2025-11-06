@@ -6,7 +6,7 @@ import org.littletonrobotics.junction.Logger
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.Commands
 
-class Intake : Subsystem {
+object Intake: Subsystem {
     private val io = when (Robot.model) {
         Robot.Model.SIMULATION -> IntakeIOSim()
         Robot.Model.COMPETITION -> IntakeIOReal()

@@ -1,21 +1,22 @@
 package com.frcteam3636.swervebase.subsystems.shooter
 
 import com.frcteam3636.swervebase.REVMotorControllerId
-import com.frcteam3636.swervebase.SparkMax
+import com.frcteam3636.swervebase.SparkFlex
 import com.frcteam3636.swervebase.utils.math.rotationsPerSecond
 import com.frcteam3636.swervebase.utils.math.rpm
 import com.revrobotics.spark.SparkBase.PersistMode
 import com.revrobotics.spark.SparkBase.ResetMode
 import com.revrobotics.spark.SparkLowLevel
 import com.revrobotics.spark.config.SparkBaseConfig
-import com.revrobotics.spark.config.SparkMaxConfig
+import com.revrobotics.spark.config.SparkFlexConfig
 import edu.wpi.first.units.measure.Voltage
 import org.team9432.annotation.Logged
 import kotlin.apply
 
 @Logged
 open class ShooterInputs {
-    var shooterMotorVelocity = 0.rotationsPerSecond
+    var upperShooterMotorVelocity = 0.rotationsPerSecond
+    var lowerShooterMotorVelocity = 0.rotationsPerSecond
 }
 
 interface ShooterIO {
@@ -26,23 +27,33 @@ interface ShooterIO {
 
 class ShooterIOReal : ShooterIO {
 
-    private var shooterMotor = SparkMax(REVMotorControllerId.ShooterMotor, SparkLowLevel.MotorType.kBrushless).apply {
-        val innerConfig = SparkMaxConfig().apply {
+    private var upperShooterMotor = SparkFlex(REVMotorControllerId.UpperShooterMotor, SparkLowLevel.MotorType.kBrushless).apply {
+        val innerConfig = SparkFlexConfig().apply {
+            idleMode(SparkBaseConfig.IdleMode.kBrake)
+        }
+        configure(innerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+    }
+
+    private var lowerShooterMotor = SparkFlex(REVMotorControllerId.LowerShooterMotor, SparkLowLevel.MotorType.kBrushless).apply {
+        val innerConfig = SparkFlexConfig().apply {
             idleMode(SparkBaseConfig.IdleMode.kBrake)
         }
         configure(innerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
     }
 
     override fun setSpeed(percent: Double) {
-        shooterMotor.set(percent)
+        upperShooterMotor.set(percent)
+        lowerShooterMotor.set(percent)
     }
 
     override fun setVoltage(voltage: Voltage) {
-        shooterMotor.setVoltage(voltage)
+        upperShooterMotor.setVoltage(voltage)
+        lowerShooterMotor.setVoltage(voltage)
     }
 
     override fun updateInputs(inputs: ShooterInputs) {
-        inputs.shooterMotorVelocity = shooterMotor.encoder.velocity.rpm
+        inputs.upperShooterMotorVelocity = upperShooterMotor.encoder.velocity.rpm
+        inputs.lowerShooterMotorVelocity = lowerShooterMotor.encoder.velocity.rpm
     }
 }
 

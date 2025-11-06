@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.Subsystem
 import org.littletonrobotics.junction.Logger
 
-class Shooter : Subsystem {
+object Shooter : Subsystem {
 
     private val io = when (Robot.model) {
         Robot.Model.SIMULATION -> ShooterIOSim()
