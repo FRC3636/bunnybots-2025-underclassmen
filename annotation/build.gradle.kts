@@ -17,9 +17,9 @@ dependencies {
     implementation(wpi.java.vendor.java())
 
     // Annotation Processor Dependencies
-    implementation("com.squareup:kotlinpoet:1.14.2")
-    implementation("com.squareup:kotlinpoet-ksp:1.14.2")
-    implementation("com.google.devtools.ksp:symbol-processing-api:2.1.0-1.0.29")
+    implementation("com.squareup:kotlinpoet:2.2.0")
+    implementation("com.squareup:kotlinpoet-ksp:2.2.0")
+    implementation("com.google.devtools.ksp:symbol-processing-api:2.3.1")
 }
 
 // Helper Functions to keep syntax cleaner

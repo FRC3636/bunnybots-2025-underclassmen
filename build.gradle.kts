@@ -129,6 +129,7 @@ dependencies {
     annotationProcessor(wpi.java.deps.wpilibAnnotations())
     implementation(wpi.java.deps.wpilib())
     implementation(wpi.java.vendor.java())
+    implementation("com.google.code.gson:gson:2.13.1")
 
     roborioDebug(wpi.java.deps.wpilibJniDebug(NativePlatforms.roborio))
     roborioDebug(wpi.java.vendor.jniDebug(NativePlatforms.roborio))

@@ -1,5 +1,6 @@
 package com.frcteam3636.swervebase
 
+import choreo.auto.AutoFactory
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.SignalLogger
@@ -72,9 +73,13 @@ object Robot : LoggedRobot() {
 
     var beforeFirstEnable = true
 
-    init {
-        SimulatedArena.overrideInstance(simulationInstance)
-    }
+    val autoFactory = AutoFactory(
+        Drivetrain::estimatedPose,
+        Drivetrain.poseEstimator::resetPose,
+        Drivetrain::followTrajectory,
+        true,
+        Drivetrain
+    )
 
     override fun robotInit() {
         // Report the use of the Kotlin Language for "FRC Usage Report" statistics
@@ -204,6 +209,7 @@ object Robot : LoggedRobot() {
     }
 
     override fun simulationInit() {
+        SimulatedArena.overrideInstance(simulationInstance)
         val instance = SimulatedArena.getInstance()
     }
 
