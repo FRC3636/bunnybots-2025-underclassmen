@@ -1,5 +1,5 @@
 {
- "name":"trajectory",
+ "name":"Trajectory",
  "version":1,
  "type":"Swerve",
  "variables":{

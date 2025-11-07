@@ -1,5 +1,6 @@
 package com.frcteam3636.swervebase.subsystems.drivetrain
 
+import choreo.auto.AutoFactory
 import choreo.trajectory.SwerveSample
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.SignalLogger

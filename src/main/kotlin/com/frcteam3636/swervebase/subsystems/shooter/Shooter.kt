@@ -31,4 +31,11 @@ object Shooter : Subsystem {
         { io.setVoltage(0.0.volts) }
     )
 
+    // Here is my sample code, should be adjusted further on to either
+    // be smart and wait for all to be shot, or just to use a good time
+    // value...
+    fun outtakeAllCarrots() : Command = Commands.race(
+        outtake(),
+        Commands.waitSeconds(1.0)
+    )
 }

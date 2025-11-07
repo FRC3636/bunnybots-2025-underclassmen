@@ -5,6 +5,7 @@ import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.SignalLogger
 import com.frcteam3636.swervebase.Dashboard.field
+import com.frcteam3636.swervebase.subsystems.drivetrain.AutoCommands
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.swervebase.subsystems.indexer.Indexer
 import com.frcteam3636.swervebase.subsystems.intake.Intake
@@ -92,6 +93,7 @@ object Robot : LoggedRobot() {
         configureAutos()
         configureBindings()
         configureDashboard()
+        Dashboard.initialize()
 
 //        Diagnostics.reportLimelightsInBackground(arrayOf("limelight-left", "limelight-right"))
 
@@ -203,6 +205,26 @@ object Robot : LoggedRobot() {
     override fun disabledInit() {
         if (model == Model.SIMULATION) {
             SimulatedArena.getInstance().resetFieldForAuto()
+        }
+    }
+
+    private var lastSelectedAuto = AutoModes.None
+
+    override fun disabledPeriodic() {
+        val selectedAuto = Dashboard.autoChooser.selected
+        if (lastSelectedAuto != selectedAuto) {
+            lastSelectedAuto = selectedAuto
+            val commandsInstance = AutoCommands(autoFactory)
+            autoCommand = when (selectedAuto) {
+                AutoModes.LeftOneCarrot -> commandsInstance.leftOneCarrot()
+                AutoModes.LeftOneCycle -> commandsInstance.leftOneCycle()
+                AutoModes.MiddleOneCarrot -> commandsInstance.middleOneCarrot()
+                AutoModes.MiddleHug -> commandsInstance.middleHug()
+                AutoModes.MiddleFar -> commandsInstance.middleFar()
+                AutoModes.RightOneCarrot -> commandsInstance.rightOneCarrot()
+                AutoModes.RightOneCycle -> commandsInstance.rightOneCycle()
+                AutoModes.None -> Commands.none()
+            }
         }
     }
 
