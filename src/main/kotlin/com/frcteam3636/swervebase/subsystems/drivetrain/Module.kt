@@ -48,7 +48,7 @@ interface SwerveModule {
 }
 
 class GeneralSwerveModule(
-    private val drivingMotor: DrivingMotor,private val turningMotor: TurningMotor, private val chassisAngle: Rotation2d
+    private val drivingMotor: DrivingMotor, private val turningMotor: TurningMotor, private val chassisAngle: Rotation2d
 ): SwerveModule {
 
     override val state: SwerveModuleState
@@ -76,7 +76,7 @@ class GeneralSwerveModule(
 
             drivingMotor.setVelocity(optimized.speedMetersPerSecond.metersPerSecond)
 
-            turningMotor.setPosition(Radians.of(corrected.angle.radians))
+            turningMotor.setPosition(Radians.of(optimized.angle.radians))
 
             field = optimized
         }

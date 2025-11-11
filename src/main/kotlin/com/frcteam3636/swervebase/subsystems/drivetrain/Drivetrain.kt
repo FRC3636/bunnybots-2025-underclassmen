@@ -12,7 +12,6 @@ import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain.Constants.ROT
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain.Constants.TRANSLATION_SENSITIVITY
 import com.frcteam3636.swervebase.utils.fieldRelativeTranslation2d
 import com.frcteam3636.swervebase.utils.math.*
-import com.frcteam3636.swervebase.utils.swerve.Corner
 import com.frcteam3636.swervebase.utils.swerve.PerCorner
 import com.frcteam3636.swervebase.utils.swerve.cornerStatesToChassisSpeeds
 import com.frcteam3636.swervebase.utils.swerve.toCornerSwerveModuleStates
@@ -75,7 +74,7 @@ object Drivetrain : Subsystem {
     private val kinematics =
         SwerveDriveKinematics(
             *Constants.MODULE_POSITIONS
-                .map { it.position.translation }
+                .map { it.translation }
                 .toTypedArray()
         )
 
@@ -309,25 +308,17 @@ object Drivetrain : Subsystem {
         val BACK_LEFT_MAGNET_OFFSET = TunerConstants.BackLeft!!.EncoderOffset
 
         val MODULE_POSITIONS = PerCorner(
-            frontLeft = Corner(
-                Pose2d(
-                    Translation2d(ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
-                ), FRONT_LEFT_MAGNET_OFFSET
+            frontLeft = Pose2d(
+                 Translation2d(ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
             ),
-            frontRight = Corner(
-                Pose2d(
-                    Translation2d(ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
-                ), FRONT_RIGHT_MAGNET_OFFSET
+            frontRight = Pose2d(
+                Translation2d(ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
             ),
-            backLeft = Corner(
-                Pose2d(
-                    Translation2d(-ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
-                ), BACK_LEFT_MAGNET_OFFSET
+            backLeft = Pose2d(
+                Translation2d(-ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
             ),
-            backRight = Corner(
-                Pose2d(
-                    Translation2d(-ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
-                ), BACK_RIGHT_MAGNET_OFFSET
+            backRight = Pose2d(
+                Translation2d(-ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
             ),
         )
 
@@ -388,6 +379,6 @@ object Drivetrain : Subsystem {
 
         /** A position with the modules radiating outwards from the center of the robot, preventing movement. */
         val BRAKE_POSITION =
-            MODULE_POSITIONS.map { module -> SwerveModuleState(0.0, module.position.translation.angle) }
+            MODULE_POSITIONS.map { module -> SwerveModuleState(0.0, module.translation.angle) }
     }
 }

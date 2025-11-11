@@ -108,7 +108,7 @@ class GyroSim(private val modules: PerCorner<SwerveModule>) : Gyro {
         val rotationalVelocities = moduleVelocities.map { it - translationVelocity }
         val yawVelocity =
             sign(rotationalVelocities.frontLeft.y) * rotationalVelocities.frontLeft.norm /
-                    Drivetrain.Constants.MODULE_POSITIONS.frontLeft.position.translation.norm
+                    Drivetrain.Constants.MODULE_POSITIONS.frontLeft.translation.norm
 
         velocity = yawVelocity.radiansPerSecond
         rotation += Rotation2d(yawVelocity) * Robot.period
