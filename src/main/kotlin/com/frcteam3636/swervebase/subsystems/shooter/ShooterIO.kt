@@ -22,6 +22,7 @@ open class ShooterInputs {
 interface ShooterIO {
     fun setSpeed(percent: Double)
     fun setVoltage(voltage: Voltage)
+    fun setVoltage(upperVoltage: Voltage, lowerVoltage: Voltage)
     fun updateInputs(inputs: ShooterInputs)
 }
 
@@ -30,6 +31,7 @@ class ShooterIOReal : ShooterIO {
     private var upperShooterMotor = SparkFlex(REVMotorControllerId.UpperShooterMotor, SparkLowLevel.MotorType.kBrushless).apply {
         val innerConfig = SparkFlexConfig().apply {
             idleMode(SparkBaseConfig.IdleMode.kBrake)
+            inverted(true)
         }
         configure(innerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
     }
@@ -47,8 +49,13 @@ class ShooterIOReal : ShooterIO {
     }
 
     override fun setVoltage(voltage: Voltage) {
-        upperShooterMotor.setVoltage(-voltage)
+        upperShooterMotor.setVoltage(voltage)
         lowerShooterMotor.setVoltage(voltage)
+    }
+
+    override fun setVoltage(upperVoltage: Voltage, lowerVoltage: Voltage) {
+        lowerShooterMotor.setVoltage(lowerVoltage)
+        upperShooterMotor.setVoltage(upperVoltage)
     }
 
     override fun updateInputs(inputs: ShooterInputs) {
@@ -65,6 +72,10 @@ class ShooterIOSim: ShooterIO {
 
     override fun setVoltage(voltage: Voltage) {
         // TODO("Not yet implemented")
+    }
+
+    override fun setVoltage(upperVoltage: Voltage, lowerVoltage: Voltage) {
+        TODO("Not yet implemented")
     }
 
     override fun updateInputs(inputs: ShooterInputs) {
