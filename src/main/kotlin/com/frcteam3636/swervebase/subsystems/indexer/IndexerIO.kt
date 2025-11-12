@@ -55,7 +55,7 @@ class IndexerIOSim: IndexerIO {
     }
 
     override fun setVoltage(voltage: Voltage) {
-        TODO("Not yet implemented")
+
     }
 
     override fun updateInputs(inputs: IndexerInputs) {

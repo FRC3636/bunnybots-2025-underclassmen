@@ -77,6 +77,7 @@ object Robot : LoggedRobot() {
         Drivetrain
     )
 
+
     override fun robotInit() {
         // Report the use of the Kotlin Language for "FRC Usage Report" statistics
         HAL.report(
@@ -181,8 +182,15 @@ object Robot : LoggedRobot() {
         }).ignoringDisable(true))
 
 
-//        controller.leftBumper().onTrue(Commands.runOnce(SignalLogger::start))
-//        controller.rightBumper().onTrue(Commands.runOnce(SignalLogger::stop))
+        controller.leftBumper().onTrue(Commands.runOnce({Intake.intakeRunning = false}))
+        controller.rightBumper().onTrue(
+            Commands.sequence(
+                Commands.runOnce({
+                    Intake.intakeRunning = true
+                }),
+                Intake.intake(),
+            )
+        )
 //
 //        controller.y().whileTrue(Drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward))
 //        controller.a().whileTrue(Drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
