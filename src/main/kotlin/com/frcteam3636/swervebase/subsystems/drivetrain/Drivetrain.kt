@@ -1,5 +1,7 @@
 package com.frcteam3636.swervebase.subsystems.drivetrain
 
+import choreo.auto.AutoFactory
+import choreo.trajectory.SwerveSample
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.SignalLogger
 import com.frcteam3636.swervebase.CTREDeviceId
@@ -45,6 +47,7 @@ import org.littletonrobotics.junction.Logger
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.jvm.optionals.getOrNull
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.pow
@@ -65,6 +68,26 @@ object Drivetrain : Subsystem {
     })
 
     val odometryLock = ReentrantLock()
+
+    // Sorry for putting the constants here
+    val PATH_FOLLOWING_TRANSLATION_GAINS = PIDGains(10.0)
+    val PATH_FOLLOWING_ROTATION_GAINS = PIDGains(7.5)
+
+    private val xController = PIDController(PATH_FOLLOWING_TRANSLATION_GAINS);
+    private val yController = PIDController(PATH_FOLLOWING_TRANSLATION_GAINS);
+    private val headingController = PIDController(PATH_FOLLOWING_ROTATION_GAINS);
+
+    init {
+        headingController.enableContinuousInput(-PI, PI)
+    }
+
+    fun followTrajectory(sample: SwerveSample) {
+        desiredChassisSpeeds = ChassisSpeeds(
+            sample.vx + xController.calculate(estimatedPose.x, sample.x),
+            sample.vy + yController.calculate(estimatedPose.y, sample.y),
+            sample.omega + headingController.calculate(estimatedPose.rotation.radians, sample.omega)
+        )
+    }
 
     private val absolutePoseIOs = when (Robot.model) {
         Robot.Model.SIMULATION -> mapOf(

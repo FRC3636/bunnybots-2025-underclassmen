@@ -1,14 +1,16 @@
 package com.frcteam3636.swervebase
 
+import choreo.auto.AutoFactory
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.SignalLogger
 import com.frcteam3636.swervebase.Dashboard.field
+import com.frcteam3636.swervebase.subsystems.drivetrain.AutoCommands
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain
-import com.frcteam3636.swervebase.utils.math.degrees
-import com.frcteam3636.swervebase.utils.math.meters
+import com.frcteam3636.swervebase.subsystems.indexer.Indexer
+import com.frcteam3636.swervebase.subsystems.intake.Intake
+import com.frcteam3636.swervebase.subsystems.shooter.Shooter
 import com.frcteam3636.swervebase.utils.sim.Arena2025Bunnybots
-import com.frcteam3636.swervebase.utils.sim.BunnybotsCarrotOnField
 import com.frcteam3636.version.BUILD_DATE
 import com.frcteam3636.version.DIRTY
 import com.frcteam3636.version.GIT_BRANCH
@@ -17,9 +19,6 @@ import com.pathplanner.lib.util.PathPlannerLogging
 import edu.wpi.first.hal.FRCNetComm.tInstances
 import edu.wpi.first.hal.FRCNetComm.tResourceType
 import edu.wpi.first.hal.HAL
-import edu.wpi.first.math.geometry.Pose2d
-import edu.wpi.first.math.geometry.Pose3d
-import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.wpilibj.*
 import edu.wpi.first.wpilibj.util.WPILibVersion
 import edu.wpi.first.wpilibj2.command.Command
@@ -28,9 +27,7 @@ import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
-import org.dyn4j.geometry.Rotation
 import org.ironmaple.simulation.SimulatedArena
-import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnField
 import org.littletonrobotics.junction.LogFileUtil
 import org.littletonrobotics.junction.LoggedRobot
 import org.littletonrobotics.junction.Logger
@@ -72,9 +69,14 @@ object Robot : LoggedRobot() {
 
     var beforeFirstEnable = true
 
-    init {
-        SimulatedArena.overrideInstance(simulationInstance)
-    }
+    val autoFactory = AutoFactory(
+        Drivetrain::estimatedPose,
+        Drivetrain.poseEstimator::resetPose,
+        Drivetrain::followTrajectory,
+        true,
+        Drivetrain
+    )
+
 
     override fun robotInit() {
         // Report the use of the Kotlin Language for "FRC Usage Report" statistics
@@ -92,6 +94,7 @@ object Robot : LoggedRobot() {
         configureAutos()
         configureBindings()
         configureDashboard()
+        Dashboard.initialize()
 
 //        Diagnostics.reportLimelightsInBackground(arrayOf("limelight-left", "limelight-right"))
 
@@ -153,6 +156,9 @@ object Robot : LoggedRobot() {
     /** Start robot subsystems so that their periodic tasks are run */
     private fun configureSubsystems() {
         Drivetrain.register()
+        Indexer.register()
+        Intake.register()
+        Shooter.register()
     }
 
     /** Expose commands for autonomous routines to use and display an auto picker in Shuffleboard. */
@@ -176,13 +182,20 @@ object Robot : LoggedRobot() {
         }).ignoringDisable(true))
 
 
-        controller.leftBumper().onTrue(Commands.runOnce(SignalLogger::start))
-        controller.rightBumper().onTrue(Commands.runOnce(SignalLogger::stop))
-
-        controller.y().whileTrue(Drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        controller.a().whileTrue(Drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        controller.b().whileTrue(Drivetrain.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        controller.x().whileTrue(Drivetrain.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        controller.leftBumper().onTrue(Commands.runOnce({Intake.intakeRunning = false}))
+        controller.rightBumper().onTrue(
+            Commands.sequence(
+                Commands.runOnce({
+                    Intake.intakeRunning = true
+                }),
+                Intake.intake(),
+            )
+        )
+//
+//        controller.y().whileTrue(Drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward))
+//        controller.a().whileTrue(Drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
+//        controller.b().whileTrue(Drivetrain.sysIdDynamic(SysIdRoutine.Direction.kForward))
+//        controller.x().whileTrue(Drivetrain.sysIdDynamic(SysIdRoutine.Direction.kReverse))
     }
 
     /** Add data to the driver station dashboard. */
@@ -203,7 +216,28 @@ object Robot : LoggedRobot() {
         }
     }
 
+    private var lastSelectedAuto = AutoModes.None
+
+    override fun disabledPeriodic() {
+        val selectedAuto = Dashboard.autoChooser.selected
+        if (lastSelectedAuto != selectedAuto) {
+            lastSelectedAuto = selectedAuto
+            val commandsInstance = AutoCommands(autoFactory)
+            autoCommand = when (selectedAuto) {
+                AutoModes.LeftOneCarrot -> commandsInstance.leftOneCarrot()
+                AutoModes.LeftOneCycle -> commandsInstance.leftOneCycle()
+                AutoModes.MiddleOneCarrot -> commandsInstance.middleOneCarrot()
+                AutoModes.MiddleHug -> commandsInstance.middleHug()
+                AutoModes.MiddleFar -> commandsInstance.middleFar()
+                AutoModes.RightOneCarrot -> commandsInstance.rightOneCarrot()
+                AutoModes.RightOneCycle -> commandsInstance.rightOneCycle()
+                AutoModes.None -> Commands.none()
+            }
+        }
+    }
+
     override fun simulationInit() {
+        SimulatedArena.overrideInstance(simulationInstance)
         val instance = SimulatedArena.getInstance()
     }
 

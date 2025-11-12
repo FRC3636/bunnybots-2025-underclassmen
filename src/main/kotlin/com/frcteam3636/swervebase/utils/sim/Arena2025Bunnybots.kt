@@ -63,7 +63,7 @@ class Arena2025Bunnybots : SimulatedArena(CarrotChaosObstacleMap()) {
     }
 
     override fun getGamePiecesByType(type: String?): List<Pose3d?>? {
-        return super.getGamePiecesByType(type);
+        return super.getGamePiecesByType(type)
 
         // Possibly visualization for carrots in the feeder? idk
     }

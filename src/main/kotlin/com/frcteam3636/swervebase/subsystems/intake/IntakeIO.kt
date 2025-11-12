@@ -1,7 +1,17 @@
 package com.frcteam3636.swervebase.subsystems.intake
 
+import com.frcteam3636.swervebase.REVMotorControllerId
+import com.frcteam3636.swervebase.SparkFlex
 import com.frcteam3636.swervebase.subsystems.indexer.IndexerInputs
 import com.frcteam3636.swervebase.utils.math.meters
+import com.frcteam3636.swervebase.utils.math.rotationsPerSecond
+import com.frcteam3636.swervebase.utils.math.rpm
+import com.revrobotics.servohub.ServoHub.ResetMode
+import com.revrobotics.spark.SparkBase
+import com.revrobotics.spark.SparkBase.PersistMode
+import com.revrobotics.spark.SparkLowLevel
+import com.revrobotics.spark.config.SparkBaseConfig
+import com.revrobotics.spark.config.SparkFlexConfig
 import edu.wpi.first.units.measure.Current
 import edu.wpi.first.units.measure.Voltage
 import org.ironmaple.simulation.IntakeSimulation
@@ -11,6 +21,7 @@ import kotlin.math.abs
 
 @Logged
 open class IntakeInputs {
+    var intakeMotorVelocity = 0.rotationsPerSecond
 }
 
 interface IntakeIO {
@@ -20,16 +31,24 @@ interface IntakeIO {
 }
 
 class IntakeIOReal : IntakeIO {
+
+    private var intakeMotor = SparkFlex(REVMotorControllerId.IntakeMotor, SparkLowLevel.MotorType.kBrushless).apply {
+        val innerConfig = SparkFlexConfig().apply {
+            idleMode(SparkBaseConfig.IdleMode.kBrake)
+        }
+        configure(innerConfig, SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+    }
+
     override fun setSpeed(percent: Double) {
-        TODO("Not yet implemented")
+        intakeMotor.set(percent)
     }
 
     override fun setVoltage(voltage: Voltage) {
-        TODO("Not yet implemented")
+        intakeMotor.setVoltage(voltage)
     }
 
     override fun updateInputs(inputs: IntakeInputs) {
-
+        inputs.intakeMotorVelocity = intakeMotor.encoder.velocity.rpm
     }
 }
 
