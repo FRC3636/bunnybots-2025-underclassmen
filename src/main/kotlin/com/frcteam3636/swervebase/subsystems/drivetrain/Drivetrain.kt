@@ -63,10 +63,11 @@ object Drivetrain : Subsystem {
         )
 
         else -> mapOf(
-//            "Limelight Rear" to LimelightPoseProvider(
-//                "limelight-rear",
-//                algorithm = mt2Algo
-//            ),
+            "Limelight 3" to LimelightPoseProvider(
+                "limelight",
+                mt2Algo,
+                false
+            )
         )
     }.mapValues { Pair(it.value, AbsolutePoseProviderInputs()) }
 
