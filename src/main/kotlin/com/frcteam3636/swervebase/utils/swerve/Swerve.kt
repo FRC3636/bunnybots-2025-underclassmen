@@ -95,4 +95,3 @@ val ChassisSpeeds.translation2dPerSecond: Translation2d
 val ChassisSpeeds.angularVelocity: AngularVelocity
     get() = omegaRadiansPerSecond.radiansPerSecond
 
-data class Corner(val position: Pose2d, val magnetOffset: Double)

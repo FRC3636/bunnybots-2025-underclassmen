@@ -21,6 +21,11 @@ enum class CTREDeviceId(val num: Int, val bus: CANBus) {
 }
 
 enum class REVMotorControllerId(val num: Int) {
+    FrontLeftDrivingMotor(1),
+    BackLeftDrivingMotor(2),
+    BackRightDrivingMotor(3),
+    FrontRightDrivingMotor(4),
+
     FrontLeftTurningMotor(5),
     BackLeftTurningMotor(6),
     BackRightTurningMotor(7),

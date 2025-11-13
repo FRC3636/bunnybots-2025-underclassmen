@@ -1,3 +1,4 @@
+
 package com.frcteam3636.swervebase.subsystems.drivetrain
 
 import com.ctre.phoenix6.BaseStatusSignal
@@ -40,6 +41,7 @@ open class DrivetrainInputs {
     var measuredPositions = PerCorner.generate { SwerveModulePosition() }
 }
 
+
 abstract class DrivetrainIO {
     protected abstract val gyro: Gyro
     abstract val modules: PerCorner<out SwerveModule>
@@ -79,31 +81,43 @@ abstract class DrivetrainIO {
     }
 }
 
-/** Drivetrain I/O layer that uses real swerve modules along with a NavX gyro. */
 class DrivetrainIOReal(override val modules: PerCorner<SwerveModule>) : DrivetrainIO() {
+
     override val gyro = when (Robot.model) {
         Robot.Model.SIMULATION -> GyroSim(modules)
         Robot.Model.COMPETITION -> GyroPigeon(Pigeon2(CTREDeviceId.PigeonGyro))
     }
 
     companion object {
-        fun fromKrakenSwerve() =
+
+        fun fromKrakenMAXSwerve() =
             DrivetrainIOReal(
-                MODULE_POSITIONS.zip(Drivetrain.Constants.KRAKEN_MODULE_CAN_IDS)
-                    .map { (corner, ids) ->
+                MODULE_POSITIONS.zip(Drivetrain.Constants.KRAKEN_MAX_MODULE_CAN_IDS)
+                    .map { (position, ids) ->
                         val (driveId, turnId) = ids
-                        MAXSwerveModule(
+                        GeneralSwerveModule(
                             DrivingTalon(driveId),
-                            turnId,
-                            corner.position.rotation
+                            TurningSparkMax(turnId),
+                            position.rotation
+                        )
+                    })
+
+        fun fromNeoMAXSwerve() =
+            DrivetrainIOReal(
+                MODULE_POSITIONS.zip(Drivetrain.Constants.NEO_MAX_MODULE_CAN_IDS)
+                    .map { (position, ids) ->
+                        val (driveId, turnId) = ids
+                        GeneralSwerveModule(
+                            DrivingSparkMAX(driveId),
+                            TurningSparkMax(turnId),
+                            position.rotation
                         )
                     })
     }
 }
 
-/** Drivetrain I/O layer that uses simulated swerve modules along with a simulated gyro with an angle based off their movement. */
 class DrivetrainIOSim : DrivetrainIO() {
-    // Create and configure a drivetrain simulation configuration
+
     val driveTrainSimulationConfig: DriveTrainSimulationConfig =
         DriveTrainSimulationConfig.Default() // Specify gyro type (for realistic gyro drifting and error simulation)
             .withGyro(COTS.ofPigeon2()) // Specify swerve module (for realistic swerve dynamics)
@@ -129,7 +143,7 @@ class DrivetrainIOSim : DrivetrainIO() {
             .withBumperSize(BUMPER_WIDTH, BUMPER_LENGTH)
 
             .withCustomModuleTranslations(
-                MODULE_POSITIONS.map { it.position.translation }.toTypedArray()
+                MODULE_POSITIONS.map { it.translation }.toTypedArray()
             )
 
     // Create a swerve drive simulation
