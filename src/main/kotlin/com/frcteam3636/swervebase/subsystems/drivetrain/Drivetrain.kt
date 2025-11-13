@@ -62,13 +62,27 @@ object Drivetrain : Subsystem {
             "Limelight" to CameraSimPoseProvider("limelight", Transform3d()),
         )
 
+//        else -> mapOf(
+//            "Limelight 3" to LimelightPoseProvider(
+//                "limelight",
+//                mt2Algo,
+//                false
+//            )
+//        )
+
         else -> mapOf(
-            "Limelight 3" to LimelightPoseProvider(
-                "limelight",
+            "Limelight Right" to LimelightPoseProvider(
+                "limelight-right",
+                mt2Algo,
+                false
+            ),
+            "Limelight Left" to LimelightPoseProvider(
+                "limelight-left",
                 mt2Algo,
                 false
             )
         )
+
     }.mapValues { Pair(it.value, AbsolutePoseProviderInputs()) }
 
     /** Helper for converting a desired drivetrain velocity into the speeds and angles for each swerve module */
@@ -313,10 +327,10 @@ object Drivetrain : Subsystem {
                  Translation2d(ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
             ),
             frontRight = Pose2d(
-                Translation2d(ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
+                Translation2d(ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(270.0)
             ),
             backLeft = Pose2d(
-                Translation2d(-ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
+                Translation2d(-ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(90.0)
             ),
             backRight = Pose2d(
                 Translation2d(-ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
