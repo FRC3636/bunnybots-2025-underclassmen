@@ -10,23 +10,15 @@ import com.frcteam3636.swervebase.Robot
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain.Constants.BRAKE_POSITION
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain.Constants.FREE_SPEED
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain.Constants.JOYSTICK_DEADBAND
-import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain.Constants.MODULE_POSITIONS
-import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain.Constants.PATH_FOLLOWING_ROTATION_GAINS
-import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain.Constants.PATH_FOLLOWING_TRANSLATION_GAINS
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain.Constants.ROTATION_SENSITIVITY
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain.Constants.TRANSLATION_SENSITIVITY
 import com.frcteam3636.swervebase.utils.fieldRelativeTranslation2d
 import com.frcteam3636.swervebase.utils.math.*
-import com.frcteam3636.swervebase.utils.swerve.Corner
 import com.frcteam3636.swervebase.utils.swerve.PerCorner
 import com.frcteam3636.swervebase.utils.swerve.cornerStatesToChassisSpeeds
 import com.frcteam3636.swervebase.utils.swerve.toCornerSwerveModuleStates
 import com.frcteam3636.swervebase.utils.translation2d
-import com.pathplanner.lib.auto.AutoBuilder
 import com.pathplanner.lib.commands.PathfindingCommand
-import com.pathplanner.lib.config.RobotConfig
-import com.pathplanner.lib.controllers.PPHolonomicDriveController
-import com.pathplanner.lib.path.PathConstraints
 import com.pathplanner.lib.pathfinding.Pathfinding
 import edu.wpi.first.math.VecBuilder
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator
@@ -44,7 +36,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import org.littletonrobotics.junction.Logger
-import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.PI
@@ -57,7 +48,7 @@ import kotlin.math.withSign
 object Drivetrain : Subsystem {
     private val io = when (Robot.model) {
         Robot.Model.SIMULATION -> DrivetrainIOSim()
-        Robot.Model.COMPETITION -> DrivetrainIOReal.fromKrakenSwerve()
+        Robot.Model.COMPETITION -> DrivetrainIOReal.fromKrakenMAXSwerve()
     }
     val inputs = LoggedDrivetrainInputs()
 
@@ -94,19 +85,34 @@ object Drivetrain : Subsystem {
             "Limelight" to CameraSimPoseProvider("limelight", Transform3d()),
         )
 
+//        else -> mapOf(
+//            "Limelight 3" to LimelightPoseProvider(
+//                "limelight",
+//                mt2Algo,
+//                false
+//            )
+//        )
+
         else -> mapOf(
-//            "Limelight Rear" to LimelightPoseProvider(
-//                "limelight-rear",
-//                algorithm = mt2Algo
-//            ),
+            "Limelight Right" to LimelightPoseProvider(
+                "limelight-right",
+                mt2Algo,
+                false
+            ),
+            "Limelight Left" to LimelightPoseProvider(
+                "limelight-left",
+                mt2Algo,
+                false
+            )
         )
+
     }.mapValues { Pair(it.value, AbsolutePoseProviderInputs()) }
 
     /** Helper for converting a desired drivetrain velocity into the speeds and angles for each swerve module */
     private val kinematics =
         SwerveDriveKinematics(
             *Constants.MODULE_POSITIONS
-                .map { it.position.translation }
+                .map { it.translation }
                 .toTypedArray()
         )
 
@@ -340,25 +346,17 @@ object Drivetrain : Subsystem {
         val BACK_LEFT_MAGNET_OFFSET = TunerConstants.BackLeft!!.EncoderOffset
 
         val MODULE_POSITIONS = PerCorner(
-            frontLeft = Corner(
-                Pose2d(
-                    Translation2d(ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
-                ), FRONT_LEFT_MAGNET_OFFSET
+            frontLeft = Pose2d(
+                 Translation2d(ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
             ),
-            frontRight = Corner(
-                Pose2d(
-                    Translation2d(ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
-                ), FRONT_RIGHT_MAGNET_OFFSET
+            frontRight = Pose2d(
+                Translation2d(ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(270.0)
             ),
-            backLeft = Corner(
-                Pose2d(
-                    Translation2d(-ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
-                ), BACK_LEFT_MAGNET_OFFSET
+            backLeft = Pose2d(
+                Translation2d(-ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(90.0)
             ),
-            backRight = Corner(
-                Pose2d(
-                    Translation2d(-ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
-                ), BACK_RIGHT_MAGNET_OFFSET
+            backRight = Pose2d(
+                Translation2d(-ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
             ),
         )
 
@@ -369,7 +367,7 @@ object Drivetrain : Subsystem {
         val PATH_FOLLOWING_ROTATION_GAINS = PIDGains(5.0).toPPLib()
 
         // CAN IDs
-        val KRAKEN_MODULE_CAN_IDS =
+        val KRAKEN_MAX_MODULE_CAN_IDS =
             PerCorner(
                 frontLeft =
                     Pair(
@@ -393,8 +391,32 @@ object Drivetrain : Subsystem {
                     ),
             )
 
+        val NEO_MAX_MODULE_CAN_IDS =
+            PerCorner(
+                frontLeft =
+                    Pair(
+                        REVMotorControllerId.FrontLeftDrivingMotor,
+                        REVMotorControllerId.FrontLeftTurningMotor,
+                    ),
+                frontRight =
+                    Pair(
+                        REVMotorControllerId.FrontRightDrivingMotor,
+                        REVMotorControllerId.FrontRightTurningMotor,
+                    ),
+                backLeft =
+                    Pair(
+                        REVMotorControllerId.BackLeftDrivingMotor,
+                        REVMotorControllerId.BackLeftTurningMotor,
+                    ),
+                backRight =
+                    Pair(
+                        REVMotorControllerId.BackRightDrivingMotor,
+                        REVMotorControllerId.BackRightTurningMotor,
+                    )
+            )
+
         /** A position with the modules radiating outwards from the center of the robot, preventing movement. */
         val BRAKE_POSITION =
-            MODULE_POSITIONS.map { module -> SwerveModuleState(0.0, module.position.translation.angle) }
+            MODULE_POSITIONS.map { module -> SwerveModuleState(0.0, module.translation.angle) }
     }
 }

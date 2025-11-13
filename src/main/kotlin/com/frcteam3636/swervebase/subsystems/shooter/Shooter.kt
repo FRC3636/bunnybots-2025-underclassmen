@@ -22,12 +22,12 @@ object Shooter : Subsystem {
     }
 
     fun intake() : Command = Commands.startEnd(
-        { io.setVoltage(2.0.volts) },
+        { io.setVoltage(4.0.volts, 3.6.volts) },
         { io.setVoltage(0.0.volts) }
     )
 
     fun outtake() : Command = Commands.startEnd(
-        { io.setVoltage((-2.0).volts) },
+        { io.setVoltage((-4.0).volts, (-3.6).volts) },
         { io.setVoltage(0.0.volts) }
     )
 
