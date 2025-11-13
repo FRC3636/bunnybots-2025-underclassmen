@@ -14,21 +14,21 @@ class AutoCommands(var autoFactory: AutoFactory) {
 
     fun leftOneCycle(): Command = Commands.sequence(
         leftOneCarrot(),
-        Commands.parallel(
+        Commands.race(
             autoFactory.trajectoryCmd("LeftPathCycle"),
             Intake.intake(),
         ),
         Shooter.outtakeAllCarrots()
     )
 
-    fun middleOneCarrot(): Command = Commands.sequence(
+    fun middlePreloadCycle(): Command = Commands.sequence(
         autoFactory.trajectoryCmd("MiddleStart"),
         Shooter.outtakeAllCarrots()
     )
 
     fun middleHug(): Command = Commands.sequence(
-        middleOneCarrot(),
-        Commands.parallel(
+        middlePreloadCycle(),
+        Commands.race(
             autoFactory.trajectoryCmd("MiddleHug"),
             Intake.intake()
         ),
@@ -36,22 +36,22 @@ class AutoCommands(var autoFactory: AutoFactory) {
     )
 
     fun middleFar(): Command = Commands.sequence(
-        middleOneCarrot(),
-        Commands.parallel(
+        middlePreloadCycle(),
+        Commands.race(
             autoFactory.trajectoryCmd("MiddleFar"),
             Intake.intake()
         ),
         Shooter.outtakeAllCarrots()
     )
 
-    fun rightOneCarrot(): Command = Commands.sequence(
+    fun rightPreloadCycle(): Command = Commands.sequence(
         autoFactory.trajectoryCmd("RightPathStart"),
         Shooter.outtakeAllCarrots()
     )
 
     fun rightOneCycle(): Command = Commands.sequence(
-        rightOneCarrot(),
-        Commands.parallel(
+        rightPreloadCycle(),
+        Commands.race(
             autoFactory.trajectoryCmd("RightPathCycle"),
             Intake.intake(),
         ),

@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import org.ironmaple.simulation.SimulatedArena
 import org.littletonrobotics.junction.LogFileUtil
 import org.littletonrobotics.junction.LoggedRobot
@@ -226,10 +225,10 @@ object Robot : LoggedRobot() {
             autoCommand = when (selectedAuto) {
                 AutoModes.LeftOneCarrot -> commandsInstance.leftOneCarrot()
                 AutoModes.LeftOneCycle -> commandsInstance.leftOneCycle()
-                AutoModes.MiddleOneCarrot -> commandsInstance.middleOneCarrot()
+                AutoModes.MiddleOneCarrot -> commandsInstance.middlePreloadCycle()
                 AutoModes.MiddleHug -> commandsInstance.middleHug()
                 AutoModes.MiddleFar -> commandsInstance.middleFar()
-                AutoModes.RightOneCarrot -> commandsInstance.rightOneCarrot()
+                AutoModes.RightOneCarrot -> commandsInstance.rightPreloadCycle()
                 AutoModes.RightOneCycle -> commandsInstance.rightOneCycle()
                 AutoModes.None -> Commands.none()
             }

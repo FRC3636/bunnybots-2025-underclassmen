@@ -36,6 +36,6 @@ object Shooter : Subsystem {
     // value...
     fun outtakeAllCarrots() : Command = Commands.race(
         outtake(),
-        Commands.waitSeconds(1.0)
+        Commands.waitSeconds(3.5)
     )
 }
