@@ -276,7 +276,6 @@ object Robot : LoggedRobot() {
     override fun autonomousInit() {
         if (beforeFirstEnable)
             beforeFirstEnable = true
-//        autoCommand = Dashboard.autoChooser.selected
         autoCommand?.schedule()
     }
 
