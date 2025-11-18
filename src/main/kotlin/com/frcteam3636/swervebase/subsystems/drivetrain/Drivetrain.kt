@@ -60,10 +60,6 @@ object Drivetrain : Subsystem {
 
     val odometryLock = ReentrantLock()
 
-    // Sorry for putting the constants here
-    val PATH_FOLLOWING_TRANSLATION_GAINS = PIDGains(10.0)
-    val PATH_FOLLOWING_ROTATION_GAINS = PIDGains(7.5)
-
     private val xController = PIDController(PATH_FOLLOWING_TRANSLATION_GAINS);
     private val yController = PIDController(PATH_FOLLOWING_TRANSLATION_GAINS);
     private val headingController = PIDController(PATH_FOLLOWING_ROTATION_GAINS);
@@ -85,27 +81,13 @@ object Drivetrain : Subsystem {
             "Limelight" to CameraSimPoseProvider("limelight", Transform3d()),
         )
 
-//        else -> mapOf(
-//            "Limelight 3" to LimelightPoseProvider(
-//                "limelight",
-//                mt2Algo,
-//                false
-//            )
-//        )
-
-        else -> mapOf(
-            "Limelight Right" to LimelightPoseProvider(
-                "limelight-right",
-                mt2Algo,
-                false
-            ),
-            "Limelight Left" to LimelightPoseProvider(
-                "limelight-left",
-                mt2Algo,
-                false
-            )
-        )
-
+       else -> mapOf(
+           "Limelight 3" to LimelightPoseProvider(
+               "limelight",
+               mt2Algo,
+               false
+           )
+       )
     }.mapValues { Pair(it.value, AbsolutePoseProviderInputs()) }
 
     /** Helper for converting a desired drivetrain velocity into the speeds and angles for each swerve module */
@@ -137,21 +119,6 @@ object Drivetrain : Subsystem {
         Pathfinding.setPathfinder(
             LocalADStarAK()
         )
-
-//        AutoBuilder.configure(
-//            this::estimatedPose,
-//            this::estimatedPose::set,
-//            this::measuredChassisSpeeds,
-//            this::desiredChassisSpeeds::set,
-//            PPHolonomicDriveController(
-//                PATH_FOLLOWING_TRANSLATION_GAINS,
-//                PATH_FOLLOWING_ROTATION_GAINS
-//            ),
-//            RobotConfig.fromGUISettings(),
-//            // Mirror path when the robot is on the red alliance (the robot starts on the opposite side of the field)
-//            { DriverStation.getAlliance() == Optional.of(DriverStation.Alliance.Red) },
-//            this
-//        )
 
         if (Robot.model != Robot.Model.SIMULATION) {
             PathfindingCommand.warmupCommand().schedule()
@@ -363,8 +330,8 @@ object Drivetrain : Subsystem {
         // Chassis Control
         val FREE_SPEED = 6.06.metersPerSecond
 
-        val PATH_FOLLOWING_TRANSLATION_GAINS = PIDGains(5.0).toPPLib()
-        val PATH_FOLLOWING_ROTATION_GAINS = PIDGains(5.0).toPPLib()
+        val PATH_FOLLOWING_TRANSLATION_GAINS = PIDGains(10.0)
+        val PATH_FOLLOWING_ROTATION_GAINS = PIDGains(7.5)
 
         // CAN IDs
         val KRAKEN_MAX_MODULE_CAN_IDS =
