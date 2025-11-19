@@ -11,10 +11,7 @@ object Intake: Subsystem {
 
     var intakeRunning = false
 
-    private val io = when (Robot.model) {
-        Robot.Model.SIMULATION -> IntakeIOSim()
-        Robot.Model.COMPETITION -> IntakeIOReal()
-    }
+    private val io = IntakeIOReal()
 
     var inputs = LoggedIntakeInputs()
 
