@@ -53,36 +53,3 @@ class IntakeIOReal : IntakeIO {
         inputs.intakeMotorVelocity = intakeMotor.encoder.velocity.rpm
     }
 }
-
-class IntakeIOSim : IntakeIO {
-//    private val intakeSimulation: IntakeSimulation = IntakeSimulation.OverTheBumperIntake(
-//        "Carrot",
-//        // Get AbstractDriveTrainSimulation from Drivetrain when that is implemented...
-//        0.7.meters,
-//        0.2.meters,
-//        IntakeSimulation.IntakeSide.BACK,
-//        1
-//    )
-
-//    override fun setSpeed(percent: Double) {
-//        // I don't like doing this
-//        if (abs(percent) < 0.1) {
-//            intakeSimulation.stopIntake();
-//        }
-//        else {
-//            intakeSimulation.startIntake();
-//        }
-//    }
-
-    override fun setSpeed(percent: Double) {
-        TODO("Not yet implemented")
-    }
-
-    override fun setVoltage(voltage: Voltage) {
-        TODO("Unimplemented, what even is a voltage")
-    }
-
-    override fun updateInputs(inputs: IntakeInputs) {
-
-    }
-}
