@@ -1,7 +1,6 @@
 package com.frcteam3636.swervebase.subsystems.drivetrain
 
-//import org.photonvision.PhotonCamera
-//import org.photonvision.PhotonPoseEstimator
+
 import com.frcteam3636.swervebase.Robot
 import com.frcteam3636.swervebase.utils.LimelightHelpers
 import com.frcteam3636.swervebase.utils.math.degrees
@@ -18,13 +17,10 @@ import edu.wpi.first.math.geometry.Transform3d
 import edu.wpi.first.math.numbers.N1
 import edu.wpi.first.math.numbers.N3
 import edu.wpi.first.networktables.NetworkTableInstance
-import edu.wpi.first.units.Units.DegreesPerSecond
 import edu.wpi.first.units.measure.AngularVelocity
 import edu.wpi.first.units.measure.Time
 import edu.wpi.first.util.struct.Struct
 import edu.wpi.first.util.struct.StructSerializable
-import org.littletonrobotics.junction.LogTable
-import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.photonvision.PhotonCamera
 import org.photonvision.PhotonPoseEstimator
 import org.photonvision.simulation.PhotonCameraSim
@@ -34,63 +30,23 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
 
 
-class AbsolutePoseProviderInputs : LoggableInputs {
-    /**
-     * The most recent measurement from the pose estimator.
-     */
-    var measurement: AbsolutePoseMeasurement? = null
+class AbsolutePoseProviderInputs {
 
-    /**
-     * Whether the provider is connected.
-     */
-    var connected = false
-
+    var measurement: Array<AbsolutePoseMeasurement?> = arrayOf()
     var observedTags: IntArray = intArrayOf()
-
-    override fun toLog(table: LogTable) {
-        if (measurement != null) {
-            table.put("Measurement", measurement)
-        }
-        table.put("Connected", connected)
-        table.put("ObservedTags", observedTags)
-    }
-
-    override fun fromLog(table: LogTable) {
-        measurement = table.get("Measurement", measurement)[0]
-        connected = table.get("Connected", connected)
-        observedTags = table.get("ObservedTags", observedTags)
-    }
+    var latestTargetObservation = TargetObservation(Rotation2d.kZero, Rotation2d.kZero)
+    var connected = false
 }
 
 interface AbsolutePoseProvider {
     fun updateInputs(inputs: AbsolutePoseProviderInputs)
 }
 
-/**
- * A Limelight localization algorithm.
- */
-sealed class LimelightAlgorithm {
-    /**
-     * An older, less accurate localization algorithm.
-     */
-    object MegaTag : LimelightAlgorithm()
-
-    /**
-     * A newer and much more accurate algorithm that requires accurate gyro readings and a right-side-up Limelight.
-     */
-    class MegaTag2(private val gyroGetter: () -> Rotation2d, private val velocityGetter: () -> AngularVelocity) :
-        LimelightAlgorithm() {
-        val gyroPosition: Rotation2d
-            get() = gyroGetter()
-        val gyroVelocity: AngularVelocity
-            get() = velocityGetter()
-    }
-}
-
 data class LimelightMeasurement(
     var poseMeasurement: AbsolutePoseMeasurement? = null,
     var observedTags: IntArray = intArrayOf(),
-) /* --- BEGIN KOTLIN COMPILER GENERATED CODE ---- */ {
+    var shouldReject: Boolean = false,
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -99,6 +55,7 @@ data class LimelightMeasurement(
 
         if (poseMeasurement != other.poseMeasurement) return false
         if (!observedTags.contentEquals(other.observedTags)) return false
+        if (shouldReject != other.shouldReject) return false
 
         return true
     }
@@ -108,90 +65,120 @@ data class LimelightMeasurement(
         result = 31 * result + observedTags.contentHashCode()
         return result
     }
-} /* --- END KOTLIN COMPILER GENERATED CODE ---- */
+}
 
 class LimelightPoseProvider(
     private val name: String,
-    private val megaTagV2: LimelightAlgorithm.MegaTag2,
-    private val isLL4: Boolean
+    private val yawGetter: () -> Rotation2d,
+    private val velocityGetter: () -> AngularVelocity,
 ) : AbsolutePoseProvider {
     // References:
     // https://docs.limelightvision.io/docs/docs-limelight/tutorials/tutorial-swerve-pose-estimation
     // https://docs.limelightvision.io/docs/docs-limelight/apis/limelight-lib#4-field-localization-with-megatag
 
     private var observedTags = intArrayOf()
-
-    private var measurement: AbsolutePoseMeasurement? = null
+    private var measurements = arrayOf<AbsolutePoseMeasurement>()
+    private var shouldReject: Boolean = false
     private var lock = ReentrantLock()
-
     private var lastSeenHb: Double = 0.0
-    private var hbSub = NetworkTableInstance.getDefault().getTable(name).getDoubleTopic("hb").subscribe(0.0)
+    private var isThrottled = false
+    private var currentPipeline = SEARCH_PIPELINE
+    private var wasIMUChanged = false
+    private var cornerCount = 0
+    val gyroVelocity: AngularVelocity get() = velocityGetter()
+    val gyroAngle: Rotation2d get() = yawGetter()
+    private val table = NetworkTableInstance.getDefault().getTable(name)
+    private val hbSubscriber = table.getDoubleTopic("hb").subscribe(0.0)
+    private val txSubscriber = table.getDoubleTopic("tx").subscribe(0.0)
+    private val tySubscriber = table.getDoubleTopic("ty").subscribe(0.0)
+    private val tvSubscriber = table.getIntegerTopic("tv").subscribe(0)
+    private val megatag1Subscriber = table.getDoubleArrayTopic("botpose_wpiblue").subscribe(doubleArrayOf())
+    private val megatag2Subscriber = table.getDoubleArrayTopic("botpose_orb_wpiblue").subscribe(doubleArrayOf())
+    private val targetPoseRobotSpaceSubscriber = table.getDoubleArrayTopic("targetpose_robotspace").subscribe(doubleArrayOf(0.0, 0.0, 0.0))
+    private val gyroPublisher = table.getDoubleArrayTopic("robot_orientation_set").publish()
+    private val throttlePublisher = table.getIntegerTopic("throttle_set").publish()
+    private val imuModePublisher = table.getIntegerTopic("imumode_set").publish()
+    private val cropPublisher = table.getDoubleArrayTopic("crop").publish()
+    private val pipelinePublisher = table.getIntegerTopic("pipeline").publish()
     private var loopsSinceLastSeen: Int = 0
-
-    private var currentAlgorithm: LimelightAlgorithm = LimelightAlgorithm.MegaTag
 
     init {
         thread(isDaemon = true) {
             while (true) {
                 val temp = updateCurrentMeasurement()
-                lock.lock()
-                measurement = temp.poseMeasurement
-                observedTags = temp.observedTags
-                lock.unlock()
+                try {
+                    lock.lock()
+                    for (measurement in temp) {
+                        measurements += measurement.poseMeasurement!!
+                        observedTags += measurement.observedTags
+                    }
+                }
+                finally {
+                    lock.unlock()
+                }
                 Thread.sleep(Robot.period.toLong())
             }
         }
     }
 
-    private fun updateCurrentMeasurement(): LimelightMeasurement {
+    private fun updateCurrentMeasurement(): Array<LimelightMeasurement> {
         val measurement = LimelightMeasurement()
-
-        if ((!Robot.beforeFirstEnable) && currentAlgorithm == LimelightAlgorithm.MegaTag) {
-            currentAlgorithm = megaTagV2
+        if (Robot.beforeFirstEnable) {
+            imuModePublisher.accept(1.toLong())
+            gyroPublisher.accept(doubleArrayOf(gyroAngle.degrees, 0.0, 0.0, 0.0, 0.0, 0.0))
+            NetworkTableInstance.getDefault().flush()
         }
 
-        when (val algorithm = currentAlgorithm) {
-            is LimelightAlgorithm.MegaTag ->
-                LimelightHelpers.getBotPoseEstimate_wpiBlue(name)?.let { estimate ->
-                    measurement.observedTags = estimate.rawFiducials.mapNotNull { it?.id }.toIntArray()
+        for (rawSample in megatag1Subscriber.readQueue()) {
+            
+        }
 
-                    // Reject zero tag or low-quality one tag readings
-                    if (estimate.tagCount == 0) return measurement
-                    if (estimate.tagCount == 1) {
-                        val fiducial = estimate.rawFiducials[0]
-                        if (fiducial == null
-                            || fiducial.ambiguity > AMBIGUITY_THRESHOLD
-                            || fiducial.distToCamera > MAX_SINGLE_TAG_DISTANCE
-                        ) return measurement
-                    }
-
-                    measurement.poseMeasurement = AbsolutePoseMeasurement(
-                        estimate.pose,
-                        estimate.timestampSeconds.seconds,
-                        VecBuilder.fill(.5, .5, .25)
-                    )
-                }
-
-            is LimelightAlgorithm.MegaTag2 -> {
-                LimelightHelpers.SetRobotOrientation(
-                    name,
-                    algorithm.gyroPosition.degrees,
-                    // The Limelight sample code leaves these as zero, and the API docs call them "Unnecessary."
-                    0.0, 0.0, 0.0, 0.0, 0.0
-                )
-
-                LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name)?.let { estimate ->
-                    measurement.observedTags = estimate.rawFiducials.mapNotNull { it?.id }.toIntArray()
-                    val highSpeed = algorithm.gyroVelocity.abs(DegreesPerSecond) > 720.0
-                    if (estimate.tagCount == 0 || highSpeed) return measurement
-
-                    measurement.poseMeasurement = AbsolutePoseMeasurement(
-                        estimate.pose,
-                        estimate.timestampSeconds.seconds,
-                        // This value is pulled directly from the Limelight docs (linked at the top of this class)
-                        VecBuilder.fill(.5, .5, 9999999.0)
-                    )
-                }
+//        if ((!Robot.beforeFirstEnable) && currentAlgorithm == LimelightAlgorithm.MegaTag) {
+//            currentAlgorithm = megaTagV2
+//        }
+//
+//        when (val algorithm = currentAlgorithm) {
+//            is LimelightAlgorithm.MegaTag ->
+//                LimelightHelpers.getBotPoseEstimate_wpiBlue(name)?.let { estimate ->
+//                    measurement.observedTags = estimate.rawFiducials.mapNotNull { it?.id }.toIntArray()
+//
+//                    // Reject zero tag or low-quality one tag readings
+//                    if (estimate.tagCount == 0) return measurement
+//                    if (estimate.tagCount == 1) {
+//                        val fiducial = estimate.rawFiducials[0]
+//                        if (fiducial == null
+//                            || fiducial.ambiguity > AMBIGUITY_THRESHOLD
+//                            || fiducial.distToCamera > MAX_SINGLE_TAG_DISTANCE
+//                        ) return measurement
+//                    }
+//
+//                    measurement.poseMeasurement = AbsolutePoseMeasurement(
+//                        estimate.pose,
+//                        estimate.timestampSeconds.seconds,
+//                        VecBuilder.fill(.5, .5, .25)
+//                    )
+//                }
+//
+//            is LimelightAlgorithm.MegaTag2 -> {
+//                LimelightHelpers.SetRobotOrientation(
+//                    name,
+//                    algorithm.gyroPosition.degrees,
+//                    // The Limelight sample code leaves these as zero, and the API docs call them "Unnecessary."
+//                    0.0, 0.0, 0.0, 0.0, 0.0
+//                )
+//
+//                LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name)?.let { estimate ->
+//                    measurement.observedTags = estimate.rawFiducials.mapNotNull { it?.id }.toIntArray()
+//                    val highSpeed = algorithm.gyroVelocity.abs(DegreesPerSecond) > 720.0
+//                    if (estimate.tagCount == 0 || highSpeed) return measurement
+//
+//                    measurement.poseMeasurement = AbsolutePoseMeasurement(
+//                        estimate.pose,
+//                        estimate.timestampSeconds.seconds,
+//                        // This value is pulled directly from the Limelight docs (linked at the top of this class)
+//                        VecBuilder.fill(.5, .5, 9999999.0)
+//                    )
+//                }
             }
 
         }
