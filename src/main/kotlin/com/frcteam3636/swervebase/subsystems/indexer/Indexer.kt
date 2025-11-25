@@ -1,5 +1,6 @@
 package com.frcteam3636.swervebase.subsystems.indexer
 
+import com.ctre.phoenix6.BaseStatusSignal
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.Subsystem
@@ -38,4 +39,7 @@ object Indexer: Subsystem {
         }
     )
 
+    fun getStatusSignals(): MutableList<BaseStatusSignal> {
+        return io.getStatusSignals()
+    }
 }

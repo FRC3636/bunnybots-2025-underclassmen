@@ -71,4 +71,8 @@ class IndexerIOReal : IndexerIO {
         inputs.indexerTemperature = indexerMotor.motorTemperature.celsius
         inputs.isCarrotDetected = detectedSignal.value
     }
+
+    fun getStatusSignals(): MutableList<BaseStatusSignal> {
+        return mutableListOf<BaseStatusSignal>(detectedSignal)
+    }
 }

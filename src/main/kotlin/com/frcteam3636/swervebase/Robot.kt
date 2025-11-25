@@ -94,6 +94,7 @@ object Robot : LoggedRobot() {
 //        Diagnostics.reportLimelightsInBackground(arrayOf("limelight-left", "limelight-right"))
 
         statusSignals += Drivetrain.getStatusSignals()
+        statusSignals += Indexer.getStatusSignals()
     }
 
     /** Start logging or pull replay logs from a file */
