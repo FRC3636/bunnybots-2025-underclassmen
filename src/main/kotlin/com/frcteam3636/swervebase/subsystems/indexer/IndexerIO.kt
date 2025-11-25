@@ -1,7 +1,14 @@
 package com.frcteam3636.swervebase.subsystems.indexer
 
+import com.ctre.phoenix6.BaseStatusSignal
+import com.ctre.phoenix6.configs.CANrangeConfiguration
+import com.ctre.phoenix6.signals.UpdateModeValue
+import com.frcteam3636.swervebase.CANrange
+import com.frcteam3636.swervebase.CTREDeviceId
 import com.frcteam3636.swervebase.REVMotorControllerId
 import com.frcteam3636.swervebase.SparkMax
+import com.frcteam3636.swervebase.utils.math.amps
+import com.frcteam3636.swervebase.utils.math.celsius
 import com.frcteam3636.swervebase.utils.math.rotationsPerSecond
 import com.frcteam3636.swervebase.utils.math.rpm
 import com.revrobotics.spark.SparkBase.PersistMode
@@ -17,6 +24,8 @@ import kotlin.apply
 open class IndexerInputs {
     var isCarrotDetected: Boolean = false
     var indexerMotorVelocity = 0.rotationsPerSecond
+    var indexerCurrent = 0.amps
+    var indexerTemperature = 0.celsius
 }
 
 interface IndexerIO {
@@ -26,12 +35,26 @@ interface IndexerIO {
 }
 
 class IndexerIOReal : IndexerIO {
-
     private var indexerMotor = SparkMax(REVMotorControllerId.IndexerMotor, SparkLowLevel.MotorType.kBrushless).apply {
         val innerConfig = SparkMaxConfig().apply {
             idleMode(SparkBaseConfig.IdleMode.kBrake)
         }
         configure(innerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+    }
+    private var canRange = CANrange(CTREDeviceId.CANRangeIndexer).apply {
+        configurator.apply(
+            CANrangeConfiguration().apply {
+                ProximityParams.ProximityThreshold = 0.1 // From the senior bot, may be different?
+                ToFParams.UpdateMode = UpdateModeValue.ShortRange100Hz
+            }
+        )
+    }
+
+    private val detectedSignal = canRange.isDetected
+
+    init {
+        BaseStatusSignal.setUpdateFrequencyForAll(100.0, detectedSignal)
+        canRange.optimizeBusUtilization()
     }
 
     override fun setSpeed(percent: Double) {
@@ -44,21 +67,8 @@ class IndexerIOReal : IndexerIO {
 
     override fun updateInputs(inputs: IndexerInputs) {
         inputs.indexerMotorVelocity = indexerMotor.encoder.velocity.rpm
-        // Probably want to do code for detecting carrots here.
-    }
-}
-
-class IndexerIOSim: IndexerIO {
-
-    override fun setSpeed(percent: Double) {
-        TODO("Not yet implemented")
-    }
-
-    override fun setVoltage(voltage: Voltage) {
-
-    }
-
-    override fun updateInputs(inputs: IndexerInputs) {
-        TODO("Not yet implemented")
+        inputs.indexerCurrent = indexerMotor.outputCurrent.amps
+        inputs.indexerTemperature = indexerMotor.motorTemperature.celsius
+        inputs.isCarrotDetected = detectedSignal.value
     }
 }

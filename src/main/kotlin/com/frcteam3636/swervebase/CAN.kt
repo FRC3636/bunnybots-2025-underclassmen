@@ -2,6 +2,7 @@ package com.frcteam3636.swervebase
 
 import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.hardware.CANcoder
+import com.ctre.phoenix6.hardware.CANrange
 import com.ctre.phoenix6.hardware.Pigeon2
 import com.ctre.phoenix6.hardware.TalonFX
 import com.revrobotics.spark.SparkFlex
@@ -16,6 +17,7 @@ enum class CTREDeviceId(val num: Int, val bus: CANBus) {
     BackRightDrivingMotor(3, canivoreBus),
     FrontRightDrivingMotor(4, canivoreBus),
 
+    CANRangeIndexer(10, canivoreBus), // Assuming we only have 1 can range unlike the senior bot ...
 
     PigeonGyro(20, canivoreBus),
 }
@@ -43,3 +45,4 @@ fun TalonFX(id: CTREDeviceId) = TalonFX(id.num, id.bus)
 fun SparkMax(id: REVMotorControllerId, type: SparkLowLevel.MotorType) = SparkMax(id.num, type)
 fun SparkFlex(id: REVMotorControllerId, type: SparkLowLevel.MotorType) = SparkFlex(id.num, type)
 fun Pigeon2(id: CTREDeviceId) = Pigeon2(id.num, id.bus)
+fun CANrange(id: CTREDeviceId) = CANrange(id.num, id.bus)

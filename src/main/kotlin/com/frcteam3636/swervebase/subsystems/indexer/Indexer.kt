@@ -1,19 +1,19 @@
 package com.frcteam3636.swervebase.subsystems.indexer
 
-import com.frcteam3636.swervebase.Robot
-import com.frcteam3636.swervebase.utils.math.volts
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.Subsystem
+import edu.wpi.first.wpilibj2.command.button.Trigger
 import org.littletonrobotics.junction.Logger
 
 object Indexer: Subsystem {
-    private val io = when (Robot.model) {
-        Robot.Model.SIMULATION -> IndexerIOSim()
-        Robot.Model.COMPETITION -> IndexerIOReal()
-    }
+    private val io = IndexerIOReal()
 
     var inputs = LoggedIndexerInputs()
+
+    val isCarrotDetected: Trigger = Trigger {
+        inputs.isCarrotDetected
+    }
 
     override fun periodic() {
         io.updateInputs(inputs)
@@ -21,13 +21,21 @@ object Indexer: Subsystem {
     }
 
     fun intake() : Command = Commands.startEnd(
-        { io.setVoltage(2.0.volts) },
-        { io.setVoltage(0.0.volts) }
+        {
+            io.setSpeed(0.7)
+        },
+        {
+            io.setSpeed(0.0)
+        }
     )
 
     fun outtake() : Command = Commands.startEnd(
-        { io.setVoltage((-2.0).volts) },
-        { io.setVoltage(0.0.volts) }
+        {
+            io.setSpeed(-0.5)
+        },
+        {
+            io.setSpeed(0.0)
+        }
     )
 
 }
