@@ -33,6 +33,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader
 import org.littletonrobotics.junction.wpilog.WPILOGWriter
 import kotlin.io.path.Path
 import kotlin.io.path.exists
+import kotlin.time.Duration.Companion.seconds
 
 
 /**
@@ -72,6 +73,21 @@ object Robot : LoggedRobot() {
         Drivetrain
     )
 
+    fun intakeUntilFull(): Command = Commands.parallel(
+        Indexer.intake(),
+        Intake.intake()
+    ).until { Indexer.isCarrotDetected.asBoolean }
+
+    fun outtakeUntilEmpty(): Command = Commands.sequence(
+        Shooter.outtake().withTimeout(0.2),
+        Commands.parallel(
+            Indexer.intake(),
+            Commands.race(
+                Shooter.outtake(),
+
+            )
+        )
+    )
 
     override fun robotInit() {
         // Report the use of the Kotlin Language for "FRC Usage Report" statistics
