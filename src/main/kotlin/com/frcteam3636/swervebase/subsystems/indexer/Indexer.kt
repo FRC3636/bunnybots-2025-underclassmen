@@ -6,17 +6,39 @@ import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.Subsystem
 import edu.wpi.first.wpilibj2.command.button.Trigger
 import org.littletonrobotics.junction.Logger
+import java.util.Timer
 
 object Indexer: Subsystem {
     private val io = IndexerIOReal()
 
+    private var wasDetected = false
     var inputs = LoggedIndexerInputs()
 
     val isCarrotDetected: Trigger = Trigger {
         inputs.isCarrotDetected
     }
 
+    private var detectedTimer = edu.wpi.first.wpilibj.Timer()
+    var isIndexerEmpty = false
+
     override fun periodic() {
+        if (inputs.isCarrotDetected) {
+            wasDetected = true
+            detectedTimer.stop()
+            detectedTimer.reset()
+        }
+        if (!inputs.isCarrotDetected && wasDetected) {
+            wasDetected = false
+            detectedTimer.reset()
+            detectedTimer.start()
+        }
+        if (detectedTimer.advanceIfElapsed(0.5)) {
+            isIndexerEmpty = true
+        }
+        else {
+            isIndexerEmpty = false
+        }
+
         io.updateInputs(inputs)
         Logger.processInputs("indexer", inputs)
     }
