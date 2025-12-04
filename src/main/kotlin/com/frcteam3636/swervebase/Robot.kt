@@ -10,7 +10,6 @@ import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.swervebase.subsystems.indexer.Indexer
 import com.frcteam3636.swervebase.subsystems.intake.Intake
 import com.frcteam3636.swervebase.subsystems.shooter.Shooter
-import com.frcteam3636.swervebase.utils.sim.Arena2025Bunnybots
 import com.frcteam3636.version.BUILD_DATE
 import com.frcteam3636.version.DIRTY
 import com.frcteam3636.version.GIT_BRANCH
@@ -26,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
-import org.ironmaple.simulation.SimulatedArena
 import org.littletonrobotics.junction.LogFileUtil
 import org.littletonrobotics.junction.LoggedRobot
 import org.littletonrobotics.junction.Logger
@@ -64,8 +62,6 @@ object Robot : LoggedRobot() {
 
     private val statusSignals = mutableListOf<BaseStatusSignal>()
 
-    private val simulationInstance = Arena2025Bunnybots()
-
     var beforeFirstEnable = true
 
     val autoFactory = AutoFactory(
@@ -98,6 +94,7 @@ object Robot : LoggedRobot() {
 //        Diagnostics.reportLimelightsInBackground(arrayOf("limelight-left", "limelight-right"))
 
         statusSignals += Drivetrain.getStatusSignals()
+        statusSignals += Indexer.getStatusSignals()
     }
 
     /** Start logging or pull replay logs from a file */
@@ -171,6 +168,13 @@ object Robot : LoggedRobot() {
 //        )
     }
 
+    fun doIntakeSequence(): Command {
+        return Commands.parallel(
+            Intake.intake(),
+            Indexer.intake().until(Indexer.isCarrotDetected)
+        )
+    }
+
     /** Configure which commands each joystick button triggers. */
     private fun configureBindings() {
         Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft.hid, joystickRight.hid)
@@ -181,15 +185,13 @@ object Robot : LoggedRobot() {
         }).ignoringDisable(true))
 
 
-        controller.leftBumper().onTrue(Commands.runOnce({Intake.intakeRunning = false}))
-        controller.rightBumper().onTrue(
-            Commands.sequence(
-                Commands.runOnce({
-                    Intake.intakeRunning = true
-                }),
-                Intake.intake(),
+        controller.leftBumper().whileTrue(
+            Commands.parallel(
+                Intake.outtake(),
+                Indexer.outtake()
             )
         )
+        controller.rightBumper().whileTrue(doIntakeSequence())
 //
 //        controller.y().whileTrue(Drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward))
 //        controller.a().whileTrue(Drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
@@ -206,12 +208,6 @@ object Robot : LoggedRobot() {
         PathPlannerLogging.setLogActivePathCallback {
             field.getObject("path").poses = it
             Logger.recordOutput("Drivetrain/Desired Path", *it.toTypedArray())
-        }
-    }
-
-    override fun disabledInit() {
-        if (model == Model.SIMULATION) {
-            SimulatedArena.getInstance().resetFieldForAuto()
         }
     }
 
@@ -233,22 +229,6 @@ object Robot : LoggedRobot() {
                 AutoModes.None -> Commands.none()
             }
         }
-    }
-
-    override fun simulationInit() {
-        SimulatedArena.overrideInstance(simulationInstance)
-        val instance = SimulatedArena.getInstance()
-    }
-
-    override fun simulationPeriodic() {
-        val instance = SimulatedArena.getInstance()
-        instance.simulationPeriodic()
-
-        val carrotPositions = instance.getGamePiecesArrayByType("Carrot")
-        Logger.recordOutput("FieldSimulation/CarrotPositions", *carrotPositions)
-
-        val cabbagePositions = instance.getGamePiecesArrayByType("Cabbage")
-        Logger.recordOutput("FieldSimulation/CabbagePositions", *cabbagePositions)
     }
 
     private fun reportDiagnostics() {

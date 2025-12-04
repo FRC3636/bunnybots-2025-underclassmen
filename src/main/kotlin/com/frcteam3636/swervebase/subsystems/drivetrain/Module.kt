@@ -69,16 +69,15 @@ class GeneralSwerveModule(
     override var desiredState: SwerveModuleState = SwerveModuleState(0.0, Rotation2d())
         get() = SwerveModuleState(field.speedMetersPerSecond, field.angle + chassisAngle)
         set(value) {
-            //corrected means module-relative angle
+            // corrected is the module-relative angle
             val corrected = SwerveModuleState(value.speedMetersPerSecond, value.angle - chassisAngle)
             // optimize the state to avoid rotating more than 90 degrees
-            val optimized = SwerveModuleState.optimize(corrected, Rotation2d.fromRadians(turningMotor.position.inRadians()))
+            corrected.optimize(Rotation2d.fromRadians(turningMotor.position.inRadians()))
 
-            drivingMotor.setVelocity(optimized.speedMetersPerSecond.metersPerSecond)
+            drivingMotor.setVelocity(corrected.speedMetersPerSecond.metersPerSecond)
+            turningMotor.setPosition(Radians.of(corrected.angle.radians))
 
-            turningMotor.setPosition(Radians.of(optimized.angle.radians))
-
-            field = optimized
+            field = corrected
         }
 
     override fun getSignals(): Array<BaseStatusSignal> {
