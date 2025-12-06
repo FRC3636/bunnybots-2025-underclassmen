@@ -1,6 +1,5 @@
 package com.frcteam3636.swervebase.subsystems.drivetrain
 
-import choreo.auto.AutoFactory
 import choreo.trajectory.SwerveSample
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.SignalLogger
@@ -40,11 +39,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import org.littletonrobotics.junction.Logger
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.jvm.optionals.getOrNull
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.absoluteValue
-import kotlin.math.pow
-import kotlin.math.withSign
+import kotlin.math.*
 
 /** A singleton object representing the drivetrain. */
 object Drivetrain : Subsystem {
@@ -62,9 +57,9 @@ object Drivetrain : Subsystem {
 
     val odometryLock = ReentrantLock()
 
-    private val xController = PIDController(PATH_FOLLOWING_TRANSLATION_GAINS);
-    private val yController = PIDController(PATH_FOLLOWING_TRANSLATION_GAINS);
-    private val headingController = PIDController(PATH_FOLLOWING_ROTATION_GAINS);
+    private val xController = PIDController(PATH_FOLLOWING_TRANSLATION_GAINS)
+    private val yController = PIDController(PATH_FOLLOWING_TRANSLATION_GAINS)
+    private val headingController = PIDController(PATH_FOLLOWING_ROTATION_GAINS)
 
     init {
         headingController.enableContinuousInput(-PI, PI)
@@ -316,16 +311,17 @@ object Drivetrain : Subsystem {
 
         val MODULE_POSITIONS = PerCorner(
             frontLeft = Pose2d(
-                 Translation2d(ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
+                // the rotation is 180 here because freshmen fab mounted the swerve modules badly
+                 Translation2d(ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
             ),
             frontRight = Pose2d(
-                Translation2d(ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(270.0)
+                Translation2d(ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
             ),
             backLeft = Pose2d(
-                Translation2d(-ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(90.0)
+                Translation2d(-ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees( 180.0)
             ),
             backRight = Pose2d(
-                Translation2d(-ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
+                Translation2d(-ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
             ),
         )
 
@@ -341,22 +337,22 @@ object Drivetrain : Subsystem {
                 frontLeft =
                     Pair(
                         CTREDeviceId.FrontLeftDrivingMotor,
-                        REVMotorControllerId.FrontLeftTurningMotor,
+                        REVMotorControllerId.FrontLeftTurningMotor
                     ),
                 frontRight =
                     Pair(
                         CTREDeviceId.FrontRightDrivingMotor,
-                        REVMotorControllerId.FrontRightTurningMotor,
+                        REVMotorControllerId.FrontRightTurningMotor
                     ),
                 backLeft =
                     Pair(
                         CTREDeviceId.BackLeftDrivingMotor,
-                        REVMotorControllerId.BackLeftTurningMotor,
+                        REVMotorControllerId.BackLeftTurningMotor
                     ),
                 backRight =
                     Pair(
                         CTREDeviceId.BackRightDrivingMotor,
-                        REVMotorControllerId.BackRightTurningMotor,
+                        REVMotorControllerId.BackRightTurningMotor
                     ),
             )
 

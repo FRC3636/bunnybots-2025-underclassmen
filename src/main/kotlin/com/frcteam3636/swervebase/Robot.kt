@@ -1,11 +1,9 @@
 package com.frcteam3636.swervebase
 
-import choreo.auto.AutoFactory
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.SignalLogger
 import com.frcteam3636.swervebase.Dashboard.field
-import com.frcteam3636.swervebase.subsystems.drivetrain.AutoCommands
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.swervebase.subsystems.indexer.Indexer
 import com.frcteam3636.swervebase.subsystems.intake.Intake
@@ -33,7 +31,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader
 import org.littletonrobotics.junction.wpilog.WPILOGWriter
 import kotlin.io.path.Path
 import kotlin.io.path.exists
-import kotlin.time.Duration.Companion.seconds
 
 
 /**
@@ -65,13 +62,18 @@ object Robot : LoggedRobot() {
 
     var beforeFirstEnable = true
 
-    val autoFactory = AutoFactory(
-        Drivetrain::estimatedPose,
-        Drivetrain.poseEstimator::resetPose,
-        Drivetrain::followTrajectory,
-        true,
-        Drivetrain
-    )
+    /** A model of robot, depending on where we're deployed to. */
+    enum class Model {
+        SIMULATION, COMPETITION
+    }
+
+//    val autoFactory = AutoFactory(
+//        Drivetrain::estimatedPose,
+//        Drivetrain.poseEstimator::resetPose,
+//        Drivetrain::followTrajectory,
+//        true,
+//        Drivetrain
+//    )
 
     fun intakeUntilFull(): Command = Commands.parallel(
         Indexer.intake(),
@@ -82,12 +84,11 @@ object Robot : LoggedRobot() {
         Shooter.outtake().withTimeout(0.2),
         Commands.parallel(
             Indexer.intake(),
-            Commands.race(
-                Shooter.outtake(),
-
-            )
+            Shooter.outtake()
         )
-    )
+    ).until {
+        Indexer.isIndexerEmpty
+    }
 
     override fun robotInit() {
         // Report the use of the Kotlin Language for "FRC Usage Report" statistics
@@ -187,13 +188,15 @@ object Robot : LoggedRobot() {
     fun doIntakeSequence(): Command {
         return Commands.parallel(
             Intake.intake(),
-            Indexer.intake().until(Indexer.isCarrotDetected)
+//            Indexer.intake().until(Indexer.isCarrotDetected)
+            Indexer.intake()
         )
     }
 
     /** Configure which commands each joystick button triggers. */
     private fun configureBindings() {
-        Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft.hid, joystickRight.hid)
+//        Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft.hid, joystickRight.hid)
+//        Drivetrain.defaultCommand = Drivetrain.driveWithController(controller)
         // (The button with the yellow tape on it)
         joystickLeft.button(8).onTrue(Commands.runOnce({
             println("Zeroing gyro.")
@@ -208,6 +211,10 @@ object Robot : LoggedRobot() {
             )
         )
         controller.rightBumper().whileTrue(doIntakeSequence())
+
+        controller.rightTrigger().whileTrue(
+            Shooter.outtake()
+        )
 //
 //        controller.y().whileTrue(Drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward))
 //        controller.a().whileTrue(Drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
@@ -227,25 +234,25 @@ object Robot : LoggedRobot() {
         }
     }
 
-    private var lastSelectedAuto = AutoModes.None
+//    private var lastSelectedAuto = AutoModes.None
 
-    override fun disabledPeriodic() {
-        val selectedAuto = Dashboard.autoChooser.selected
-        if (lastSelectedAuto != selectedAuto) {
-            lastSelectedAuto = selectedAuto
-            val commandsInstance = AutoCommands(autoFactory)
-            autoCommand = when (selectedAuto) {
-                AutoModes.LeftOneCarrot -> commandsInstance.leftOneCarrot()
-                AutoModes.LeftOneCycle -> commandsInstance.leftOneCycle()
-                AutoModes.MiddleOneCarrot -> commandsInstance.middlePreloadCycle()
-                AutoModes.MiddleHug -> commandsInstance.middleHug()
-                AutoModes.MiddleFar -> commandsInstance.middleFar()
-                AutoModes.RightOneCarrot -> commandsInstance.rightPreloadCycle()
-                AutoModes.RightOneCycle -> commandsInstance.rightOneCycle()
-                AutoModes.None -> Commands.none()
-            }
-        }
-    }
+//    override fun disabledPeriodic() {
+//        val selectedAuto = Dashboard.autoChooser.selected
+//        if (lastSelectedAuto != selectedAuto) {
+//            lastSelectedAuto = selectedAuto
+//            val commandsInstance = AutoCommands(autoFactory)
+//            autoCommand = when (selectedAuto) {
+//                AutoModes.LeftOneCarrot -> commandsInstance.leftOneCarrot()
+//                AutoModes.LeftOneCycle -> commandsInstance.leftOneCycle()
+//                AutoModes.MiddleOneCarrot -> commandsInstance.middlePreloadCycle()
+//                AutoModes.MiddleHug -> commandsInstance.middleHug()
+//                AutoModes.MiddleFar -> commandsInstance.middleFar()
+//                AutoModes.RightOneCarrot -> commandsInstance.rightPreloadCycle()
+//                AutoModes.RightOneCycle -> commandsInstance.rightOneCycle()
+//                AutoModes.None -> Commands.none()
+//            }
+//        }
+//    }
 
     private fun reportDiagnostics() {
         Diagnostics.periodic()
@@ -284,11 +291,6 @@ object Robot : LoggedRobot() {
     }
 
     override fun testExit() {
-    }
-
-    /** A model of robot, depending on where we're deployed to. */
-    enum class Model {
-        SIMULATION, COMPETITION
     }
 
     /** The model of this robot. */
