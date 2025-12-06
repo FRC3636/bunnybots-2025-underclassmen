@@ -291,10 +291,6 @@ class TurningSparkMax(id: REVMotorControllerId): TurningMotor {
         )
     }
 
-    fun getRawEncoderPosition(): Double {
-        return inner.absoluteEncoder.position
-    }
-
     override fun getSignals(): Array<BaseStatusSignal>{
         return arrayOf()
     }

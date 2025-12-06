@@ -1,11 +1,9 @@
 package com.frcteam3636.swervebase
 
-import choreo.auto.AutoFactory
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.SignalLogger
 import com.frcteam3636.swervebase.Dashboard.field
-import com.frcteam3636.swervebase.subsystems.drivetrain.AutoCommands
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.swervebase.subsystems.indexer.Indexer
 import com.frcteam3636.swervebase.subsystems.intake.Intake
@@ -33,7 +31,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader
 import org.littletonrobotics.junction.wpilog.WPILOGWriter
 import kotlin.io.path.Path
 import kotlin.io.path.exists
-import kotlin.time.Duration.Companion.seconds
 
 
 /**
