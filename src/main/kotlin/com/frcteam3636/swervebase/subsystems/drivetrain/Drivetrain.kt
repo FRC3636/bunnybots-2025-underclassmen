@@ -248,8 +248,8 @@ object Drivetrain : Subsystem {
     @Suppress("unused")
     fun driveWithController(controller: CommandXboxController): Command =
         run {
-            val translationInput = Translation2d(controller.leftX, controller.leftY)
-            val rotationInput = Translation2d(controller.rightX, controller.rightY)
+            val translationInput = Translation2d(controller.leftY, controller.leftX)
+            val rotationInput = Translation2d(controller.rightY, -controller.rightX)
 
             drive(translationInput, rotationInput)
         }
@@ -302,7 +302,7 @@ object Drivetrain : Subsystem {
         val BUMPER_WIDTH = 30.inches
         val BUMPER_LENGTH = 30.inches
 
-        const val JOYSTICK_DEADBAND = 0.075
+        const val JOYSTICK_DEADBAND = 0.1
 
         val FRONT_RIGHT_MAGNET_OFFSET = TunerConstants.FrontRight!!.EncoderOffset
         val FRONT_LEFT_MAGNET_OFFSET = TunerConstants.FrontLeft!!.EncoderOffset
@@ -321,7 +321,7 @@ object Drivetrain : Subsystem {
                 Translation2d(-ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees( 180.0)
             ),
             backRight = Pose2d(
-                Translation2d(-ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
+                Translation2d(-ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
             ),
         )
 

@@ -27,7 +27,12 @@ object Shooter : Subsystem {
     )
 
     fun outtake() : Command = Commands.startEnd(
-        { io.setVoltage((-4.0).volts, (-3.6).volts) },
+        { io.setVoltage((-3.4).volts, (-3.0).volts) },
+        { io.setVoltage(0.0.volts) }
+    )
+
+    fun fast() : Command = Commands.startEnd(
+        { io.setVoltage((-12.0).volts, (-12.0).volts) },
         { io.setVoltage(0.0.volts) }
     )
 
