@@ -316,16 +316,17 @@ object Drivetrain : Subsystem {
 
         val MODULE_POSITIONS = PerCorner(
             frontLeft = Pose2d(
-                 Translation2d(ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
+                // the rotation is 180 here because freshmen fab mounted the swerve modules badly
+                 Translation2d(ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
             ),
             frontRight = Pose2d(
-                Translation2d(ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(270.0)
+                Translation2d(ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
             ),
             backLeft = Pose2d(
-                Translation2d(-ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(90.0)
+                Translation2d(-ROBOT_LENGTH, ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees( 180.0)
             ),
             backRight = Pose2d(
-                Translation2d(-ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(180.0)
+                Translation2d(-ROBOT_LENGTH, -ROBOT_WIDTH) / 2.0, Rotation2d.fromDegrees(0.0)
             ),
         )
 
@@ -341,22 +342,22 @@ object Drivetrain : Subsystem {
                 frontLeft =
                     Pair(
                         CTREDeviceId.FrontLeftDrivingMotor,
-                        REVMotorControllerId.FrontLeftTurningMotor,
+                        REVMotorControllerId.FrontLeftTurningMotor
                     ),
                 frontRight =
                     Pair(
                         CTREDeviceId.FrontRightDrivingMotor,
-                        REVMotorControllerId.FrontRightTurningMotor,
+                        REVMotorControllerId.FrontRightTurningMotor
                     ),
                 backLeft =
                     Pair(
                         CTREDeviceId.BackLeftDrivingMotor,
-                        REVMotorControllerId.BackLeftTurningMotor,
+                        REVMotorControllerId.BackLeftTurningMotor
                     ),
                 backRight =
                     Pair(
                         CTREDeviceId.BackRightDrivingMotor,
-                        REVMotorControllerId.BackRightTurningMotor,
+                        REVMotorControllerId.BackRightTurningMotor
                     ),
             )
 

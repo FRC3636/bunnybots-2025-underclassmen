@@ -7,8 +7,12 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration
 import com.ctre.phoenix6.controls.PositionVoltage
 import com.ctre.phoenix6.controls.VelocityVoltage
 import com.ctre.phoenix6.controls.VoltageOut
-import com.ctre.phoenix6.signals.*
-import com.frcteam3636.swervebase.*
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue
+import com.ctre.phoenix6.signals.NeutralModeValue
+import com.frcteam3636.swervebase.CTREDeviceId
+import com.frcteam3636.swervebase.REVMotorControllerId
+import com.frcteam3636.swervebase.SparkMax
+import com.frcteam3636.swervebase.TalonFX
 import com.frcteam3636.swervebase.utils.math.*
 import com.revrobotics.spark.SparkBase
 import com.revrobotics.spark.SparkBase.PersistMode
@@ -247,7 +251,7 @@ class TurningTalon(id: CTREDeviceId, encoderID: CTREDeviceId, magnetOffset: Doub
 }
 
 //This is for a MAX swerve module
-class TurningSparkMax(id: REVMotorControllerId): TurningMotor{
+class TurningSparkMax(id: REVMotorControllerId): TurningMotor {
 
     private val inner = SparkMax(id, SparkLowLevel.MotorType.kBrushless).apply {
         configure(
@@ -274,13 +278,21 @@ class TurningSparkMax(id: REVMotorControllerId): TurningMotor{
     }
 
     override val position: Angle
-        get() = Radians.of(inner.absoluteEncoder.position)
+        get() {
+            val rawPosition = inner.absoluteEncoder.position
+            val correctedPosition = (rawPosition).mod(TAU)
+            return Radians.of(correctedPosition)
+        }
 
     override fun setPosition(position: Angle) {
         inner.closedLoopController.setReference(
-            position.inRadians(),
+            (position.inRadians()).mod(TAU),
             SparkBase.ControlType.kPosition
         )
+    }
+
+    fun getRawEncoderPosition(): Double {
+        return inner.absoluteEncoder.position
     }
 
     override fun getSignals(): Array<BaseStatusSignal>{
