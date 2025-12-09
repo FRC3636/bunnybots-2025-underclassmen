@@ -1,6 +1,7 @@
 package com.frcteam3636.swervebase.subsystems.drivetrain
 
 import choreo.auto.AutoFactory
+import com.frcteam3636.swervebase.Robot
 import com.frcteam3636.swervebase.subsystems.intake.Intake
 import com.frcteam3636.swervebase.subsystems.shooter.Shooter
 import edu.wpi.first.wpilibj2.command.Command
@@ -9,52 +10,52 @@ import edu.wpi.first.wpilibj2.command.Commands
 class AutoCommands(var autoFactory: AutoFactory) {
     fun leftOneCarrot(): Command = Commands.sequence(
         autoFactory.trajectoryCmd("LeftPathStart"),
-        Shooter.outtakeAllCarrots()
+        Robot.outtakeUntilEmpty()
     )
 
     fun leftOneCycle(): Command = Commands.sequence(
         leftOneCarrot(),
-        Commands.race(
+        Commands.deadline(
             autoFactory.trajectoryCmd("LeftPathCycle"),
-            Intake.intake(),
+            Robot.intakeUntilFull()
         ),
-        Shooter.outtakeAllCarrots()
+        Robot.outtakeUntilEmpty()
     )
 
     fun middlePreloadCycle(): Command = Commands.sequence(
         autoFactory.trajectoryCmd("MiddleStart"),
-        Shooter.outtakeAllCarrots()
+        Robot.outtakeUntilEmpty()
     )
 
     fun middleHug(): Command = Commands.sequence(
         middlePreloadCycle(),
-        Commands.race(
+        Commands.deadline(
             autoFactory.trajectoryCmd("MiddleHug"),
-            Intake.intake()
+            Robot.intakeUntilFull()
         ),
-        Shooter.outtakeAllCarrots()
+        Robot.outtakeUntilEmpty()
     )
 
     fun middleFar(): Command = Commands.sequence(
         middlePreloadCycle(),
-        Commands.race(
+        Commands.deadline(
             autoFactory.trajectoryCmd("MiddleFar"),
-            Intake.intake()
+            Robot.intakeUntilFull()
         ),
-        Shooter.outtakeAllCarrots()
+        Robot.outtakeUntilEmpty()
     )
 
     fun rightPreloadCycle(): Command = Commands.sequence(
         autoFactory.trajectoryCmd("RightPathStart"),
-        Shooter.outtakeAllCarrots()
+        Robot.outtakeUntilEmpty()
     )
 
     fun rightOneCycle(): Command = Commands.sequence(
         rightPreloadCycle(),
-        Commands.race(
+        Commands.deadline(
             autoFactory.trajectoryCmd("RightPathCycle"),
-            Intake.intake(),
+            Robot.intakeUntilFull()
         ),
-        Shooter.outtakeAllCarrots()
+        Robot.outtakeUntilEmpty()
     )
 }

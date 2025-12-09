@@ -1,5 +1,6 @@
 package com.frcteam3636.swervebase
 
+import choreo.auto.AutoFactory
 import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.SignalLogger
@@ -67,13 +68,7 @@ object Robot : LoggedRobot() {
         SIMULATION, COMPETITION
     }
 
-//    val autoFactory = AutoFactory(
-//        Drivetrain::estimatedPose,
-//        Drivetrain.poseEstimator::resetPose,
-//        Drivetrain::followTrajectory,
-//        true,
-//        Drivetrain
-//    )
+    var autoFactory: AutoFactory? = null
 
     fun intakeUntilFull(): Command = Commands.parallel(
         Indexer.intake(),
@@ -176,6 +171,13 @@ object Robot : LoggedRobot() {
 
     /** Expose commands for autonomous routines to use and display an auto picker in Shuffleboard. */
     private fun configureAutos() {
+        autoFactory = AutoFactory(
+            Drivetrain::estimatedPose,
+            Drivetrain.poseEstimator::resetPose,
+            Drivetrain::followTrajectory,
+            true,
+            Drivetrain
+        )
 //        NamedCommands.registerCommand(
 //            "revAim",
 //            Commands.parallel(
