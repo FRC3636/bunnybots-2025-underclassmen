@@ -190,7 +190,13 @@ object Robot : LoggedRobot() {
     fun doIntakeSequence(): Command {
         return Commands.parallel(
             Intake.intake(),
-//            Indexer.intake().until(Indexer.isCarrotDetected)
+            Indexer.intake()
+        ).until(Indexer.isCarrotDetected)
+    }
+
+    fun shoot(): Command {
+        return Commands.parallel(
+            Shooter.outtake(),
             Indexer.intake()
         )
     }
@@ -198,7 +204,7 @@ object Robot : LoggedRobot() {
     /** Configure which commands each joystick button triggers. */
     private fun configureBindings() {
 //        Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft.hid, joystickRight.hid)
-        Drivetrain.defaultCommand = Drivetrain.driveWithController(controller)
+        Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft.hid,joystickRight.hid)
         // (The button with the yellow tape on it)
         controller.a().onTrue(Commands.runOnce({
             println("Zeroing gyro.")
@@ -211,19 +217,19 @@ object Robot : LoggedRobot() {
         }).ignoringDisable(true))
 
 
-        controller.leftBumper().whileTrue(
+        joystickLeft.button(3).whileTrue(
             Commands.parallel(
                 Intake.outtake(),
                 Indexer.outtake()
             )
         )
-        controller.rightBumper().whileTrue(doIntakeSequence())
+        joystickLeft.button(2).whileTrue(doIntakeSequence())
 
-        controller.b().whileTrue(
+        joystickRight.button(3).whileTrue(
             Shooter.fast()
         )
 
-        controller.rightTrigger().whileTrue(
+        joystickRight.button(1).whileTrue(
             Shooter.outtake()
         )
 //
