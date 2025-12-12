@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.Commands
 
 class AutoCommands(var autoFactory: AutoFactory) {
+    fun testAuto(): Command = autoFactory.trajectoryCmd("RightPathStart")
+
     fun leftOneCarrot(): Command = Commands.sequence(
         autoFactory.trajectoryCmd("LeftPathStart"),
         Robot.outtakeUntilEmpty()

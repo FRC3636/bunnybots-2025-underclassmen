@@ -5,6 +5,7 @@ import com.ctre.phoenix6.BaseStatusSignal
 import com.ctre.phoenix6.CANBus
 import com.ctre.phoenix6.SignalLogger
 import com.frcteam3636.swervebase.Dashboard.field
+import com.frcteam3636.swervebase.subsystems.drivetrain.AutoCommands
 import com.frcteam3636.swervebase.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.swervebase.subsystems.indexer.Indexer
 import com.frcteam3636.swervebase.subsystems.intake.Intake
@@ -67,8 +68,6 @@ object Robot : LoggedRobot() {
     enum class Model {
         SIMULATION, COMPETITION
     }
-
-    var autoFactory: AutoFactory? = null
 
     fun intakeUntilFull(): Command = Commands.parallel(
         Indexer.intake(),
@@ -171,13 +170,6 @@ object Robot : LoggedRobot() {
 
     /** Expose commands for autonomous routines to use and display an auto picker in Shuffleboard. */
     private fun configureAutos() {
-        autoFactory = AutoFactory(
-            Drivetrain::estimatedPose,
-            Drivetrain.poseEstimator::resetPose,
-            Drivetrain::followTrajectory,
-            true,
-            Drivetrain
-        )
 //        NamedCommands.registerCommand(
 //            "revAim",
 //            Commands.parallel(
@@ -251,25 +243,19 @@ object Robot : LoggedRobot() {
         }
     }
 
-//    private var lastSelectedAuto = AutoModes.None
+    private var lastSelectedAuto = AutoModes.None
 
-//    override fun disabledPeriodic() {
-//        val selectedAuto = Dashboard.autoChooser.selected
-//        if (lastSelectedAuto != selectedAuto) {
-//            lastSelectedAuto = selectedAuto
-//            val commandsInstance = AutoCommands(autoFactory)
-//            autoCommand = when (selectedAuto) {
-//                AutoModes.LeftOneCarrot -> commandsInstance.leftOneCarrot()
-//                AutoModes.LeftOneCycle -> commandsInstance.leftOneCycle()
-//                AutoModes.MiddleOneCarrot -> commandsInstance.middlePreloadCycle()
-//                AutoModes.MiddleHug -> commandsInstance.middleHug()
-//                AutoModes.MiddleFar -> commandsInstance.middleFar()
-//                AutoModes.RightOneCarrot -> commandsInstance.rightPreloadCycle()
-//                AutoModes.RightOneCycle -> commandsInstance.rightOneCycle()
-//                AutoModes.None -> Commands.none()
-//            }
-//        }
-//    }
+    override fun disabledPeriodic() {
+        val selectedAuto = Dashboard.autoChooser.selected
+        if (lastSelectedAuto != selectedAuto) {
+            lastSelectedAuto = selectedAuto
+            val commandsInstance = AutoCommands(autoFactory)
+            autoCommand = when (selectedAuto) {
+                AutoModes.TestAuto -> commandsInstance.testAuto()
+                AutoModes.None -> Commands.none()
+            }
+        }
+    }
 
     private fun reportDiagnostics() {
         Diagnostics.periodic()
@@ -319,4 +305,12 @@ object Robot : LoggedRobot() {
             else -> throw AssertionError("Invalid model found in preferences: $key")
         }
     }
+
+    var autoFactory = AutoFactory(
+    Drivetrain::estimatedPose,
+    Drivetrain.poseEstimator::resetPose,
+    Drivetrain::followTrajectory,
+    true,
+    Drivetrain
+    )
 }

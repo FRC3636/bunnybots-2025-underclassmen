@@ -79,8 +79,8 @@ object Drivetrain : Subsystem {
         )
 
        else -> mapOf(
-           "Limelight 3" to LimelightPoseProvider(
-               "limelight",
+           "Limelight_Main" to LimelightPoseProvider(
+               "limelight-main",
                mt2Algo,
                false
            )
