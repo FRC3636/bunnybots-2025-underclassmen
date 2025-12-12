@@ -66,10 +66,11 @@ object Drivetrain : Subsystem {
     }
 
     fun followTrajectory(sample: SwerveSample) {
-        desiredChassisSpeeds = ChassisSpeeds(
+        desiredChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
             sample.vx + xController.calculate(estimatedPose.x, sample.x),
             sample.vy + yController.calculate(estimatedPose.y, sample.y),
-            sample.omega + headingController.calculate(estimatedPose.rotation.radians, sample.omega)
+            sample.omega + headingController.calculate(estimatedPose.rotation.radians, sample.omega),
+            estimatedPose.rotation
         )
     }
 
