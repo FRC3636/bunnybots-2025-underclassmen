@@ -22,30 +22,13 @@ object Indexer: Subsystem {
     var isIndexerEmpty = false
 
     override fun periodic() {
-        if (inputs.isCarrotDetected) {
-            wasDetected = true
-            detectedTimer.stop()
-            detectedTimer.reset()
-        }
-        if (!inputs.isCarrotDetected && wasDetected) {
-            wasDetected = false
-            detectedTimer.reset()
-            detectedTimer.start()
-        }
-        if (detectedTimer.advanceIfElapsed(0.5)) {
-            isIndexerEmpty = true
-        }
-        else {
-            isIndexerEmpty = false
-        }
-
         io.updateInputs(inputs)
         Logger.processInputs("indexer", inputs)
     }
 
     fun intake() : Command = Commands.startEnd(
         {
-            io.setSpeed(-0.5)
+            io.setSpeed(-0.4)
         },
         {
             io.setSpeed(0.0)
@@ -54,7 +37,7 @@ object Indexer: Subsystem {
 
     fun outtake() : Command = Commands.startEnd(
         {
-            io.setSpeed(0.4)
+            io.setSpeed(0.3)
         },
         {
             io.setSpeed(0.0)

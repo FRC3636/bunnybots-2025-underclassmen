@@ -18,7 +18,7 @@ object Intake: Subsystem {
 
     fun intake() : Command = Commands.startEnd(
         {
-            io.setVoltage((2.0).volts)
+            io.setVoltage((4.0).volts)
         },
         {
             io.setVoltage((0.0).volts)

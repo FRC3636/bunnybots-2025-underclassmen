@@ -80,9 +80,8 @@ object Robot : LoggedRobot() {
             Indexer.intake(),
             Shooter.outtake()
         )
-    ).until {
-        Indexer.isIndexerEmpty
-    }
+    ).withTimeout(1.5)
+
 
     override fun robotInit() {
         // Report the use of the Kotlin Language for "FRC Usage Report" statistics
@@ -182,7 +181,10 @@ object Robot : LoggedRobot() {
     fun doIntakeSequence(): Command {
         return Commands.parallel(
             Intake.intake(),
-            Indexer.intake().until(Indexer.isCarrotDetected)
+            Commands.sequence(
+                Indexer.intake().until(Indexer.isCarrotDetected),
+                    Indexer.outtake().until(Indexer.isCarrotDetected.negate())
+            )
         )
     }
 
