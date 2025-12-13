@@ -182,8 +182,8 @@ object Robot : LoggedRobot() {
     fun doIntakeSequence(): Command {
         return Commands.parallel(
             Intake.intake(),
-            Indexer.intake()
-        ).until(Indexer.isCarrotDetected)
+            Indexer.intake().until(Indexer.isCarrotDetected)
+        )
     }
 
     fun shoot(): Command {

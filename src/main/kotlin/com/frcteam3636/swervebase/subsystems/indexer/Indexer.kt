@@ -45,7 +45,7 @@ object Indexer: Subsystem {
 
     fun intake() : Command = Commands.startEnd(
         {
-            io.setSpeed(-0.7)
+            io.setSpeed(-0.5)
         },
         {
             io.setSpeed(0.0)
@@ -54,7 +54,7 @@ object Indexer: Subsystem {
 
     fun outtake() : Command = Commands.startEnd(
         {
-            io.setSpeed(0.5)
+            io.setSpeed(0.4)
         },
         {
             io.setSpeed(0.0)
