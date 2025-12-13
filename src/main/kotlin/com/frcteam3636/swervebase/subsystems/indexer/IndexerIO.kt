@@ -44,7 +44,8 @@ class IndexerIOReal : IndexerIO {
     private var canRange = CANrange(CTREDeviceId.CANRangeIndexer).apply {
         configurator.apply(
             CANrangeConfiguration().apply {
-                ProximityParams.ProximityThreshold = 0.1 // From the senior bot, may be different?
+                ProximityParams.ProximityThreshold = 0.12
+                ProximityParams.ProximityHysteresis = 0.01
                 ToFParams.UpdateMode = UpdateModeValue.ShortRange100Hz
             }
         )
