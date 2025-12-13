@@ -195,33 +195,43 @@ object Robot : LoggedRobot() {
 
     /** Configure which commands each joystick button triggers. */
     private fun configureBindings() {
-//        Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft.hid, joystickRight.hid)
+        // Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft.hid, joystickRight.hid)
         Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft.hid,joystickRight.hid)
-        // (The button with the yellow tape on it)
-        controller.a().onTrue(Commands.runOnce({
-            println("Zeroing gyro.")
-            Drivetrain.zeroGyro()
-        }).ignoringDisable(true))
 
+        // Zero gyro
         joystickLeft.button(8).onTrue(Commands.runOnce({
             println("Zeroing gyro.")
             Drivetrain.zeroGyro()
         }).ignoringDisable(true))
 
-
-        joystickLeft.button(3).whileTrue(
-            Commands.parallel(
-                Intake.outtake(),
-                Indexer.outtake()
-            )
-        )
-        joystickLeft.button(2).whileTrue(doIntakeSequence())
-
-        joystickRight.button(3).whileTrue(
+        // For emergency purposes, spin flywheels as fast as possible.
+        controller.y().whileTrue(
             Shooter.fast()
         )
 
+        // Operator spin up flywheels.
+        controller.a().whileTrue(
+            Shooter.outtake()
+        )
+
+        // Do intake sequence until a carrot is detected.
+        controller.rightBumper().whileTrue(doIntakeSequence())
+
+        // Outtake a carrot in case it is stuck.
+        controller.leftBumper().whileTrue(Commands.parallel(
+            Intake.outtake(),
+            Indexer.outtake()
+        ))
+
+        controller.povDown().whileTrue(Intake.outtake())
+
+        // Intake indexer to flywheels
         joystickRight.button(1).whileTrue(
+            Indexer.intake()
+        )
+
+        // Emergency spin up the flywheels, don't use normally.
+        joystickLeft.button(1).whileTrue(
             Shooter.outtake()
         )
 //
