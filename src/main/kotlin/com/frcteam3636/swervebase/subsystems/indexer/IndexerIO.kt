@@ -41,22 +41,22 @@ class IndexerIOReal : IndexerIO {
         }
         configure(innerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
     }
-    private var canRange = CANrange(CTREDeviceId.CANRangeIndexer).apply {
-        configurator.apply(
-            CANrangeConfiguration().apply {
-                ProximityParams.ProximityThreshold = 0.12
-                ProximityParams.ProximityHysteresis = 0.01
-                ToFParams.UpdateMode = UpdateModeValue.ShortRange100Hz
-            }
-        )
-    }
+//    private var canRange = CANrange(CTREDeviceId.CANRangeIndexer).apply {
+//        configurator.apply(
+//            CANrangeConfiguration().apply {
+//                ProximityParams.ProximityThreshold = 0.12
+//                ProximityParams.ProximityHysteresis = 0.02
+//                ToFParams.UpdateMode = UpdateModeValue.ShortRange100Hz
+//            }
+//        )
+//    }
 
-    private val detectedSignal = canRange.isDetected
+//    private val detectedSignal = canRange.isDetected
 
-    init {
-        BaseStatusSignal.setUpdateFrequencyForAll(100.0, detectedSignal)
-        canRange.optimizeBusUtilization()
-    }
+//    init {
+//        BaseStatusSignal.setUpdateFrequencyForAll(100.0, detectedSignal)
+//        canRange.optimizeBusUtilization()
+//    }
 
     override fun setSpeed(percent: Double) {
         indexerMotor.set(percent)
@@ -70,10 +70,10 @@ class IndexerIOReal : IndexerIO {
         inputs.indexerMotorVelocity = indexerMotor.encoder.velocity.rpm
         inputs.indexerCurrent = indexerMotor.outputCurrent.amps
         inputs.indexerTemperature = indexerMotor.motorTemperature.celsius
-        inputs.isCarrotDetected = detectedSignal.value
+//        inputs.isCarrotDetected = detectedSignal.value
     }
 
-    fun getStatusSignals(): MutableList<BaseStatusSignal> {
-        return mutableListOf<BaseStatusSignal>(detectedSignal)
-    }
+//    fun getStatusSignals(): MutableList<BaseStatusSignal> {
+//        return mutableListOf<BaseStatusSignal>(detectedSignal)
+//    }
 }

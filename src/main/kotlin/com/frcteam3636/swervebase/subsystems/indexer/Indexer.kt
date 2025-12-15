@@ -44,7 +44,7 @@ object Indexer: Subsystem {
         }
     )
 
-    fun getStatusSignals(): MutableList<BaseStatusSignal> {
-        return io.getStatusSignals()
-    }
+//    fun getStatusSignals(): MutableList<BaseStatusSignal> {
+//        return io.getStatusSignals()
+//    }
 }
